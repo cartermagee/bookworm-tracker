@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+# Run lint-staged for formatting + lint on staged files.
+# (lint-staged sits at the repo root; per-area rules live in lint-staged.config.js.)
+npx lint-staged
+
+# Scan staged changes for secrets. See ADR-0008 / §2.16.
+# Allow opt-out only via `git commit --no-verify`.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner
+else
+  echo "WARNING: gitleaks not installed locally. CI still gates secret scanning."
+fi

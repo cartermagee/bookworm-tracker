@@ -1,0 +1,44 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cs,csproj,sln,props,targets}]
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
+
+# .NET code style — warnings as errors (see Directory.Build.props for build-level wiring)
+[*.cs]
+# `var` is allowed everywhere; we don't enforce a style preference.
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = true:silent
+dotnet_diagnostic.IDE0008.severity = silent
+
+# Prefer file-scoped namespaces, but don't fail the build over generated migration files.
+csharp_style_namespace_declarations = file_scoped:silent
+dotnet_diagnostic.IDE0161.severity = silent
+
+# Sort using directives
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# Naming
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_prefix
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_prefix.required_prefix = _
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+
+# Diagnostics
+dotnet_diagnostic.CS1591.severity = none      # missing XML comment — only enforced on Core/Infrastructure via csproj GenerateDocumentationFile
+dotnet_diagnostic.CA1707.severity = none      # underscores in test method names — we use them intentionally

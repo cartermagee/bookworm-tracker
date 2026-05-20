@@ -1,0 +1,2 @@
+# shadcn/ui primitives land here after Phase 2 runs `pnpm dlx shadcn@latest add <component>`.
+# Phase 1 leaves the directory empty (with this placeholder) so the §6 tree exists.

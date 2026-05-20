@@ -1,0 +1,3 @@
+# Gitleaks uses its built-in default ruleset when this file has no [[rules]] entries.
+# Keep this file present so engineers know secret-scanning is in force.
+title = "Bookworm Tracker gitleaks config — defaults."

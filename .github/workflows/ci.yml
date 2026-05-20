@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (build + test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        working-directory: backend
+        run: dotnet restore
+
+      - name: Build (warnings-as-errors)
+        working-directory: backend
+        env:
+          Jwt__Secret: ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded
+        run: dotnet build --no-restore -warnaserror
+
+      - name: Test
+        working-directory: backend
+        env:
+          Jwt__Secret: ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded
+        run: dotnet test --no-build --verbosity normal
+
+  frontend:
+    name: Frontend (lint + typecheck + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: frontend
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: frontend
+        run: pnpm typecheck
+
+      - name: Build
+        working-directory: frontend
+        run: pnpm build
+
+  openapi-freshness:
+    name: OpenAPI types freshness
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Boot backend and fetch fresh openapi.json
+        env:
+          Jwt__Secret: ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded
+        run: |
+          dotnet run --project backend/BookTracker.Api &
+          API_PID=$!
+          for i in {1..30}; do
+            curl -sf http://localhost:5000/health > /dev/null && break
+            sleep 1
+          done
+          curl -sf http://localhost:5000/swagger/v1/swagger.json -o /tmp/openapi.fresh.json
+          kill $API_PID 2>/dev/null || true
+
+      - name: Regenerate types from fresh openapi.json and compare
+        working-directory: frontend
+        run: |
+          cp /tmp/openapi.fresh.json ./openapi.json
+          pnpm gen:types
+          # Fail if either openapi.json or types.ts would change vs. what's committed.
+          git diff --exit-code -- openapi.json src/lib/api/types.ts \
+            || (echo "::error::OpenAPI types are stale. Run 'pnpm gen:types' locally and commit the result."; exit 1)

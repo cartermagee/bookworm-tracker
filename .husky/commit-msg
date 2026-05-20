@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Validate Conventional Commits format. See CONTRIBUTING.md for examples.
+npx --no -- commitlint --edit "$1"
