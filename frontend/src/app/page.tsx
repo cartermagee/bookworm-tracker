@@ -1,7 +1,14 @@
-// Root page redirects to /library when authed, /login otherwise.
-// Phase 1 stub: always sends to /login. Phase 2 wires server-side auth check.
 import { redirect } from "next/navigation";
+import { serverApiFetch } from "@/lib/auth/server";
 
-export default function Home() {
+export default async function Home() {
+  try {
+    const r = await serverApiFetch("/api/auth/me");
+    if (r.ok) {
+      redirect("/library");
+    }
+  } catch {
+    // network error — fall through to login
+  }
   redirect("/login");
 }
