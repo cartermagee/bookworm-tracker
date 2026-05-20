@@ -23,6 +23,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
+using Swashbuckle.AspNetCore.SwaggerGen;
+
 const string CorsPolicy = "frontend";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -169,6 +171,9 @@ builder.Services.AddSwaggerGen(o =>
         Version = "v1",
         Description = "Personal book library / reading tracker. Single-user-per-account; multi-tenancy enforced server-side.",
     });
+    // Emit enums as camelCase strings in the OpenAPI spec to match the JsonStringEnumConverter
+    // configured above (CamelCase naming policy). Without this Swashbuckle emits integer schemas.
+    o.SchemaFilter<CamelCaseStringEnumSchemaFilter>();
 });
 
 var app = builder.Build();
@@ -235,5 +240,26 @@ internal sealed class GlobalExceptionHandler(IHostEnvironment env, IProblemDetai
             ProblemDetails = pd,
             Exception = exception,
         });
+    }
+}
+
+/// <summary>
+/// Emits enum schemas as camelCase strings in the OpenAPI spec to match the
+/// JsonStringEnumConverter(JsonNamingPolicy.CamelCase) configured in JSON options.
+/// Without this Swashbuckle 7.x emits integer schemas for enums.
+/// </summary>
+internal sealed class CamelCaseStringEnumSchemaFilter : ISchemaFilter
+{
+    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    {
+        if (!context.Type.IsEnum) return;
+        schema.Type = "string";
+        schema.Format = null;
+        schema.Enum.Clear();
+        foreach (var name in Enum.GetNames(context.Type))
+        {
+            var camelName = char.ToLowerInvariant(name[0]) + name[1..];
+            schema.Enum.Add(new Microsoft.OpenApi.Any.OpenApiString(camelName));
+        }
     }
 }

@@ -383,11 +383,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * Format: int32
-         * @enum {integer}
-         */
-        BookStatus: 0 | 1 | 2;
+        /** @enum {string} */
+        BookStatus: "wantToRead" | "reading" | "read";
         CreateBookRequest: {
             title?: string | null;
             author?: string | null;

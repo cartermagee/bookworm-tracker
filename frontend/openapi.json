@@ -249,12 +249,11 @@
     "schemas": {
       "BookStatus": {
         "enum": [
-          0,
-          1,
-          2
+          "wantToRead",
+          "reading",
+          "read"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "CreateBookRequest": {
         "type": "object",
