@@ -43,9 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # pnpm version comes from `packageManager` in frontend/package.json — single source of truth.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -78,9 +77,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
+      # pnpm version comes from `packageManager` in frontend/package.json — single source of truth.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
