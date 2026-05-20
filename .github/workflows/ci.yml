@@ -89,17 +89,34 @@ jobs:
         working-directory: frontend
         run: pnpm install --frozen-lockfile
 
+      - name: Build backend (separately, so `dotnet run --no-build` boots fast)
+        working-directory: backend
+        env:
+          Jwt__Secret: ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded
+        run: dotnet build BookTracker.Api/BookTracker.Api.csproj
+
       - name: Boot backend and fetch fresh openapi.json
         env:
           Jwt__Secret: ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded
         run: |
-          dotnet run --project backend/BookTracker.Api &
+          dotnet run --project backend/BookTracker.Api --no-build > /tmp/api.log 2>&1 &
           API_PID=$!
-          for i in {1..30}; do
-            curl -sf http://localhost:5000/health > /dev/null && break
+          # Up to 60 seconds for the API to start accepting requests.
+          for i in {1..60}; do
+            if curl -sf http://localhost:5000/health > /dev/null; then
+              echo "API ready after ${i}s"
+              break
+            fi
             sleep 1
           done
-          curl -sf http://localhost:5000/swagger/v1/swagger.json -o /tmp/openapi.fresh.json
+          # Hard fail (not just curl exit 7) if /health never responded, with diagnostics.
+          if ! curl -sf http://localhost:5000/health > /dev/null; then
+            echo "::error::API never became reachable. Last 30 log lines:"
+            tail -30 /tmp/api.log
+            kill $API_PID 2>/dev/null || true
+            exit 1
+          fi
+          curl -fsS http://localhost:5000/swagger/v1/swagger.json -o /tmp/openapi.fresh.json
           kill $API_PID 2>/dev/null || true
 
       - name: Regenerate types from fresh openapi.json and compare
