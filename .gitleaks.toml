@@ -1,3 +1,25 @@
 # Gitleaks uses its built-in default ruleset when this file has no [[rules]] entries.
 # Keep this file present so engineers know secret-scanning is in force.
 title = "Bookworm Tracker gitleaks config — defaults."
+
+# Allow the well-known test JWT secret used only in ApiFactory.cs (integration-test fixture).
+# This value never appears in production config; it is hard-coded to satisfy the JWT validator
+# during WebApplicationFactory boots in CI and local test runs.
+[[allowlists]]
+description = "Integration-test JWT fixture secret in ApiFactory.cs"
+regexes = [
+  "test-secret-this-is-at-least-thirty-two-bytes-long-and-then-some",
+]
+paths = [
+  "backend/BookTracker.Tests/Fixtures/ApiFactory.cs",
+]
+
+[[allowlists]]
+description = "CI-only JWT placeholder in GitHub Actions workflow files"
+regexes = [
+  "ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded",
+]
+paths = [
+  ".github/workflows/ci.yml",
+  ".github/workflows/codeql.yml",
+]
