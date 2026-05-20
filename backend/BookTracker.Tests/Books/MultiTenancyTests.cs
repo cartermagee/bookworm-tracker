@@ -22,7 +22,7 @@ public class MultiTenancyTests : IClassFixture<ApiFactory>
 
     public MultiTenancyTests(ApiFactory factory) => _factory = factory;
 
-    [Fact(Skip = "Phase 2 implements this — remove Skip when ready")]
+    [Fact]
     public async Task User_cannot_read_another_users_book()
     {
         // Arrange: two registered users, each with one book.

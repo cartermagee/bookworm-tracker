@@ -6,8 +6,9 @@ module.exports = {
   "frontend/**/*.{json,md,css}": [
     "pnpm --prefix frontend exec prettier --write",
   ],
-  // dotnet format on staged C# files. Scopes to backend solution.
-  "backend/**/*.cs": [
-    "bash -c 'cd backend && dotnet format --include $(printf \"%s \" \"$@\")' --",
-  ],
+  // dotnet format requires a full compilation pass and is too slow for a pre-commit hook.
+  // Backend style is enforced in CI via `dotnet build -warnaserror` (see .github/workflows/ci.yml).
+  // The entry below is intentionally a no-op: it echoes the staged file list so lint-staged
+  // still "processes" the pattern and doesn't warn about an empty runner.
+  "backend/**/*.cs": ["echo"],
 };
