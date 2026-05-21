@@ -127,3 +127,50 @@ jobs:
           # Fail if either openapi.json or types.ts would change vs. what's committed.
           git diff --exit-code -- openapi.json src/lib/api/types.ts \
             || (echo "::error::OpenAPI types are stale. Run 'pnpm gen:types' locally and commit the result."; exit 1)
+
+  e2e:
+    name: E2E (Playwright)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      # pnpm version comes from `packageManager` in frontend/package.json — single source of truth.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build backend (so webServer config can use --no-build for fast startup)
+        working-directory: backend
+        env:
+          Jwt__Secret: ci-jwt-secret-this-is-at-least-thirty-two-bytes-long-padded
+        run: dotnet build BookTracker.Api/BookTracker.Api.csproj
+
+      - name: Run E2E tests
+        working-directory: frontend
+        env:
+          CI: "true"
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
