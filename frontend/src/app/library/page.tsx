@@ -5,24 +5,9 @@ import { useBooks, useLogout } from "@/lib/api/queries";
 import type { components } from "@/lib/api/types";
 
 type BookStatus = components["schemas"]["BookStatus"];
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-
-const STATUS_LABELS: Record<BookStatus, string> = {
-  wantToRead: "Want to Read",
-  reading: "Reading",
-  read: "Read",
-};
-
-const STATUS_BADGE_VARIANT: Record<
-  BookStatus,
-  "default" | "secondary" | "outline"
-> = {
-  wantToRead: "outline",
-  reading: "default",
-  read: "secondary",
-};
+import { BookList } from "@/components/BookList";
+import { STATUS_LABELS } from "@/components/BookCard";
 
 export default function LibraryPage() {
   const { data: books, isLoading, error } = useBooks();
@@ -90,57 +75,7 @@ export default function LibraryPage() {
           </div>
         </div>
 
-        {isLoading && <p className="text-gray-500">Loading your library…</p>}
-        {error && (
-          <p className="text-red-600">
-            Failed to load books: {error.message}
-          </p>
-        )}
-        {!isLoading && !error && filtered.length === 0 && (
-          <div className="py-16 text-center text-gray-500">
-            <p className="text-lg">Your library is empty.</p>
-            <Link href="/library/new">
-              <Button className="mt-4">Add your first book</Button>
-            </Link>
-          </div>
-        )}
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          {filtered.map((book) => (
-            <Link key={book.id} href={`/library/${book.id}`}>
-              <Card className="cursor-pointer transition-shadow hover:shadow-md">
-                <CardContent className="flex gap-4 p-4">
-                  {book.coverUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic; next/image requires known dimensions or remotePatterns for every CDN
-                    <img
-                      src={book.coverUrl}
-                      alt={book.title}
-                      className="h-20 w-14 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-20 w-14 items-center justify-center rounded bg-gray-100 text-2xl">
-                      📖
-                    </div>
-                  )}
-                  <div className="flex flex-1 flex-col">
-                    <p className="font-medium leading-tight">{book.title}</p>
-                    <p className="text-sm text-gray-500">{book.author}</p>
-                    <div className="mt-auto flex items-center gap-2">
-                      <Badge variant={STATUS_BADGE_VARIANT[book.status]}>
-                        {STATUS_LABELS[book.status]}
-                      </Badge>
-                      {book.rating != null && (
-                        <span className="text-xs text-gray-500">
-                          {"★".repeat(book.rating)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <BookList books={filtered} isLoading={isLoading} error={error ?? null} />
       </main>
     </div>
   );
