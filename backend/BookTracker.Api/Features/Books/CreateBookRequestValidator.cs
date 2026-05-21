@@ -17,6 +17,7 @@ public sealed class CreateBookRequestValidator : AbstractValidator<CreateBookReq
             .WithMessage("CoverUrl must be a valid absolute URL.");
         RuleFor(x => x.OpenLibraryWorkId).MaximumLength(50);
         RuleFor(x => x.Notes).MaximumLength(5000);
+        RuleFor(x => x.Status).IsInEnum();
         RuleFor(x => x.Rating).InclusiveBetween(1, 5).When(x => x.Rating.HasValue);
 
         // DateFinished required iff Status == Read. See §4 cross-cutting rule.

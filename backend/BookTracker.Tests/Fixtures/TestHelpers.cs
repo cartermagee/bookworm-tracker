@@ -40,7 +40,7 @@ public static class TestHelpers
         {
             title,
             author = "Test Author",
-            status = nameof(BookStatus.WantToRead),
+            status = "wantToRead",
         };
         var response = await client.PostAsJsonAsync("/api/books", request);
         response.EnsureSuccessStatusCode();
