@@ -20,7 +20,7 @@ public static class OpenLibraryEndpoints
         return app;
     }
 
-    private static async Task<IResult> Search(
+    private static async Task<Results<Ok<List<OpenLibrarySearchResult>>, ProblemHttpResult>> Search(
         string? q,
         int? limit,
         IBookMetadataService metadata,
@@ -40,7 +40,7 @@ public static class OpenLibraryEndpoints
         return TypedResults.Ok(dtos);
     }
 
-    private static async Task<IResult> GetByOlid(
+    private static async Task<Results<Ok<OpenLibraryBookMetadata>, ProblemHttpResult>> GetByOlid(
         string olid,
         IBookMetadataService metadata,
         CancellationToken ct)

@@ -5,7 +5,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateBook, useOpenLibrarySearch } from "@/lib/api/queries";
 import { createBookSchema, type CreateBookInput } from "@/lib/validation/book";
-import type { OpenLibrarySearchResult } from "@/lib/api/dtos";
+import type { components } from "@/lib/api/types";
+
+type OpenLibrarySearchResult = components["schemas"]["OpenLibrarySearchResult"];
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +36,7 @@ export default function NewBookPage() {
   } = useForm<CreateBookInput>({
     resolver: zodResolver(createBookSchema),
     defaultValues: {
-      status: "WantToRead",
+      status: "wantToRead",
       isbn: null,
       coverUrl: null,
       openLibraryWorkId: null,
@@ -236,9 +238,9 @@ export default function NewBookPage() {
                       className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                       {...field}
                     >
-                      <option value="WantToRead">Want to Read</option>
-                      <option value="Reading">Reading</option>
-                      <option value="Read">Read</option>
+                      <option value="wantToRead">Want to Read</option>
+                      <option value="reading">Reading</option>
+                      <option value="read">Read</option>
                     </select>
                   )}
                 />
@@ -264,7 +266,7 @@ export default function NewBookPage() {
                 )}
               </div>
 
-              {status === "Read" && (
+              {status === "read" && (
                 <div className="space-y-1">
                   <Label htmlFor="dateFinished">Date Finished *</Label>
                   <Input

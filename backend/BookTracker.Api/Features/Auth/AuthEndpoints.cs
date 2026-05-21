@@ -37,7 +37,7 @@ public static class AuthEndpoints
         return app;
     }
 
-    private static async Task<IResult> Register(
+    private static async Task<Results<Created, ProblemHttpResult>> Register(
         RegisterRequest request,
         UserManager<IdentityUser> userManager,
         JwtTokenService jwtService,
@@ -64,7 +64,7 @@ public static class AuthEndpoints
         return TypedResults.Created();  // 201, no body
     }
 
-    private static async Task<IResult> Login(
+    private static async Task<Results<NoContent, ProblemHttpResult>> Login(
         LoginRequest request,
         UserManager<IdentityUser> userManager,
         SignInManager<IdentityUser> signInManager,
@@ -83,20 +83,20 @@ public static class AuthEndpoints
         AppendAuthCookie(httpContext, jwtService.Create(user), env);
         return TypedResults.NoContent();  // 204
 
-        static IResult InvalidCredentials() =>
+        static ProblemHttpResult InvalidCredentials() =>
             TypedResults.Problem(
                 title: "Invalid email or password.",
                 statusCode: StatusCodes.Status401Unauthorized,
                 extensions: new Dictionary<string, object?> { ["errorCode"] = "INVALID_CREDENTIALS" });
     }
 
-    private static IResult Logout(HttpContext httpContext)
+    private static NoContent Logout(HttpContext httpContext)
     {
         httpContext.Response.Cookies.Delete(CookieJwtBearerEvents.CookieName);
         return TypedResults.NoContent();  // 204
     }
 
-    private static IResult Me(ClaimsPrincipal user)
+    private static Results<Ok<MeResponse>, ProblemHttpResult> Me(ClaimsPrincipal user)
     {
         var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
         var email = user.FindFirstValue(ClaimTypes.Email);

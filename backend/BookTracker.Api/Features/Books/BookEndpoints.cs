@@ -32,7 +32,7 @@ public static class BookEndpoints
         return app;
     }
 
-    private static async Task<IResult> List(
+    private static async Task<Ok<List<BookDto>>> List(
         ClaimsPrincipal user,
         AppDbContext db,
         CancellationToken ct)
@@ -45,7 +45,7 @@ public static class BookEndpoints
         return TypedResults.Ok(books.Select(ToDto).ToList());
     }
 
-    private static async Task<IResult> GetById(
+    private static async Task<Results<Ok<BookDto>, ProblemHttpResult>> GetById(
         Guid id,
         ClaimsPrincipal user,
         AppDbContext db,
@@ -59,7 +59,7 @@ public static class BookEndpoints
             : TypedResults.Ok(ToDto(book));
     }
 
-    private static async Task<IResult> Create(
+    private static async Task<Created<BookDto>> Create(
         CreateBookRequest request,
         ClaimsPrincipal user,
         AppDbContext db,
@@ -86,7 +86,7 @@ public static class BookEndpoints
         return TypedResults.Created($"/api/books/{book.Id}", ToDto(book));
     }
 
-    private static async Task<IResult> Update(
+    private static async Task<Results<Ok<BookDto>, ProblemHttpResult>> Update(
         Guid id,
         UpdateBookRequest request,
         ClaimsPrincipal user,
@@ -113,7 +113,7 @@ public static class BookEndpoints
         return TypedResults.Ok(ToDto(book));
     }
 
-    private static async Task<IResult> Delete(
+    private static async Task<Results<NoContent, ProblemHttpResult>> Delete(
         Guid id,
         ClaimsPrincipal user,
         AppDbContext db,

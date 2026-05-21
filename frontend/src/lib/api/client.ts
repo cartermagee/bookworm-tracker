@@ -98,7 +98,7 @@ export interface CreateBookPayload {
   isbn: string | null;
   coverUrl: string | null;
   openLibraryWorkId: string | null;
-  status: "WantToRead" | "Reading" | "Read";
+  status: "wantToRead" | "reading" | "read";
   rating: number | null;
   notes: string | null;
   dateFinished: string | null;

@@ -13,7 +13,11 @@ import {
   apiUpdateBook,
   type CreateBookPayload,
 } from "./client";
-import type { BookDto, MeResponse, OpenLibrarySearchResult } from "./dtos";
+import type { components } from "./types";
+
+type BookDto = components["schemas"]["BookDto"];
+type MeResponse = components["schemas"]["MeResponse"];
+type OpenLibrarySearchResult = components["schemas"]["OpenLibrarySearchResult"];
 
 export const queryKeys = {
   books: ["books"] as const,

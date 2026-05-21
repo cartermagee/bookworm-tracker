@@ -26,8 +26,8 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description Created */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -63,8 +63,8 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -96,8 +96,8 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -132,7 +132,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["MeResponse"];
+                    };
                 };
             };
         };
@@ -165,7 +167,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BookDto"][];
+                    };
                 };
             };
         };
@@ -183,12 +187,14 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description Created */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BookDto"];
+                    };
                 };
             };
         };
@@ -221,7 +227,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BookDto"];
+                    };
                 };
             };
         };
@@ -245,7 +253,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["BookDto"];
+                    };
                 };
             };
         };
@@ -261,8 +271,8 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -332,7 +342,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["OpenLibrarySearchResult"][];
+                    };
                 };
             };
         };
@@ -367,7 +379,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": components["schemas"]["OpenLibraryBookMetadata"];
+                    };
                 };
             };
         };
@@ -383,15 +397,32 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @enum {string} */
-        BookStatus: "wantToRead" | "reading" | "read";
-        CreateBookRequest: {
-            title?: string | null;
-            author?: string | null;
+        BookDto: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            author: string;
             isbn?: string | null;
             coverUrl?: string | null;
             openLibraryWorkId?: string | null;
-            status?: components["schemas"]["BookStatus"];
+            status: components["schemas"]["BookStatus"];
+            /** Format: int32 */
+            rating?: number | null;
+            notes?: string | null;
+            /** Format: date-time */
+            dateAdded: string;
+            /** Format: date-time */
+            dateFinished?: string | null;
+        };
+        /** @enum {string} */
+        BookStatus: "wantToRead" | "reading" | "read";
+        CreateBookRequest: {
+            title: string;
+            author: string;
+            isbn?: string | null;
+            coverUrl?: string | null;
+            openLibraryWorkId?: string | null;
+            status: components["schemas"]["BookStatus"];
             /** Format: int32 */
             rating?: number | null;
             notes?: string | null;
@@ -399,20 +430,42 @@ export interface components {
             dateFinished?: string | null;
         };
         LoginRequest: {
-            email?: string | null;
-            password?: string | null;
+            email: string;
+            password: string;
+        };
+        MeResponse: {
+            id: string;
+            email: string;
+        };
+        OpenLibraryBookMetadata: {
+            workId: string;
+            title: string;
+            author: string;
+            isbn?: string | null;
+            coverUrl?: string | null;
+            /** Format: int32 */
+            firstPublishYear?: number | null;
+        };
+        OpenLibrarySearchResult: {
+            workId: string;
+            title: string;
+            author: string;
+            isbn?: string | null;
+            coverUrl?: string | null;
+            /** Format: int32 */
+            firstPublishYear?: number | null;
         };
         RegisterRequest: {
-            email?: string | null;
-            password?: string | null;
+            email: string;
+            password: string;
         };
         UpdateBookRequest: {
-            title?: string | null;
-            author?: string | null;
+            title: string;
+            author: string;
             isbn?: string | null;
             coverUrl?: string | null;
             openLibraryWorkId?: string | null;
-            status?: components["schemas"]["BookStatus"];
+            status: components["schemas"]["BookStatus"];
             /** Format: int32 */
             rating?: number | null;
             notes?: string | null;

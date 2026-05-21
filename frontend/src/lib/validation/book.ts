@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const bookStatus = z.enum(["WantToRead", "Reading", "Read"]);
+const bookStatus = z.enum(["wantToRead", "reading", "read"]);
 
 const baseBookFields = {
   title: z.string().min(1).max(300),
@@ -18,7 +18,7 @@ export const createBookSchema = z
   .object(baseBookFields)
   .refine(
     (v) =>
-      v.status === "Read"
+      v.status === "read"
         ? v.dateFinished != null
         : v.dateFinished == null,
     {

@@ -2,24 +2,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useBooks, useLogout } from "@/lib/api/queries";
-import type { BookStatus } from "@/lib/api/dtos";
+import type { components } from "@/lib/api/types";
+
+type BookStatus = components["schemas"]["BookStatus"];
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const STATUS_LABELS: Record<BookStatus, string> = {
-  WantToRead: "Want to Read",
-  Reading: "Reading",
-  Read: "Read",
+  wantToRead: "Want to Read",
+  reading: "Reading",
+  read: "Read",
 };
 
 const STATUS_BADGE_VARIANT: Record<
   BookStatus,
   "default" | "secondary" | "outline"
 > = {
-  WantToRead: "outline",
-  Reading: "default",
-  Read: "secondary",
+  wantToRead: "outline",
+  reading: "default",
+  read: "secondary",
 };
 
 export default function LibraryPage() {
@@ -60,7 +62,7 @@ export default function LibraryPage() {
       <main className="mx-auto max-w-4xl p-6">
         {/* Filter + Sort controls */}
         <div className="mb-4 flex flex-wrap gap-2">
-          {(["all", "WantToRead", "Reading", "Read"] as const).map((f) => (
+          {(["all", "wantToRead", "reading", "read"] as const).map((f) => (
             <Button
               key={f}
               size="sm"
@@ -127,7 +129,7 @@ export default function LibraryPage() {
                       <Badge variant={STATUS_BADGE_VARIANT[book.status]}>
                         {STATUS_LABELS[book.status]}
                       </Badge>
-                      {book.rating !== null && (
+                      {book.rating != null && (
                         <span className="text-xs text-gray-500">
                           {"★".repeat(book.rating)}
                         </span>

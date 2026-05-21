@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -17,6 +17,14 @@
 
     <!-- Deterministic builds (helpful for CI cache hits and reproducibility). -->
     <Deterministic>true</Deterministic>
+
+    <!--
+      Limit NuGet security audit to direct dependencies only.
+      Rationale: System.Security.Cryptography.Xml (transitive via AspNetCore Identity) is
+      flagged for GHSA-37gx-xxp4-5rgx / GHSA-w3x6-4m5h-cxqf and has no available fix for
+      .NET 10 as of 2026-05. Auditing direct deps still catches anything we own.
+    -->
+    <NuGetAuditMode>direct</NuGetAuditMode>
   </PropertyGroup>
 
 </Project>

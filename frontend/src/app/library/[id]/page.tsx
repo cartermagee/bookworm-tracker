@@ -5,7 +5,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBook, useUpdateBook, useDeleteBook } from "@/lib/api/queries";
 import { updateBookSchema, type UpdateBookInput } from "@/lib/validation/book";
-import type { BookStatus } from "@/lib/api/dtos";
+import type { components } from "@/lib/api/types";
+
+type BookStatus = components["schemas"]["BookStatus"];
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,18 +16,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<BookStatus, string> = {
-  WantToRead: "Want to Read",
-  Reading: "Reading",
-  Read: "Read",
+  wantToRead: "Want to Read",
+  reading: "Reading",
+  read: "Read",
 };
 
 const STATUS_BADGE_VARIANT: Record<
   BookStatus,
   "default" | "secondary" | "outline"
 > = {
-  WantToRead: "outline",
-  Reading: "default",
-  Read: "secondary",
+  wantToRead: "outline",
+  reading: "default",
+  read: "secondary",
 };
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -173,7 +175,7 @@ export default function BookDetailPage({ params }: PageProps) {
                   <Badge variant={STATUS_BADGE_VARIANT[book.status]}>
                     {STATUS_LABELS[book.status]}
                   </Badge>
-                  {book.rating !== null && (
+                  {book.rating != null && (
                     <p className="text-yellow-500">
                       {"★".repeat(book.rating)}
                       {"☆".repeat(5 - book.rating)}
@@ -259,9 +261,9 @@ export default function BookDetailPage({ params }: PageProps) {
                         className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                         {...field}
                       >
-                        <option value="WantToRead">Want to Read</option>
-                        <option value="Reading">Reading</option>
-                        <option value="Read">Read</option>
+                        <option value="wantToRead">Want to Read</option>
+                        <option value="reading">Reading</option>
+                        <option value="read">Read</option>
                       </select>
                     )}
                   />
@@ -286,7 +288,7 @@ export default function BookDetailPage({ params }: PageProps) {
                   )}
                 </div>
 
-                {status === "Read" && (
+                {status === "read" && (
                   <div className="space-y-1">
                     <Label htmlFor="dateFinished">Date Finished *</Label>
                     <Input
