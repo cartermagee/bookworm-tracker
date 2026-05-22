@@ -25,11 +25,12 @@ export default defineConfig({
       reuseExistingServer: !process.env["CI"],
       timeout: 60_000,
       env: {
+        ASPNETCORE_ENVIRONMENT: "Development",
         Jwt__Secret: E2E_JWT_SECRET,
         Jwt__Issuer: "bookworm-tracker",
         Jwt__Audience: "bookworm-tracker",
-        ConnectionStrings__Default:
-          "Data Source=BookTracker.Api/booktracker-e2e.db",
+        // Absolute path avoids ambiguity over which directory dotnet run treats as cwd.
+        ConnectionStrings__Default: "Data Source=/tmp/booktracker-e2e.db",
       },
     },
     {
