@@ -1,19 +1,19 @@
 # Bookworm Tracker
 
-A single-user-per-account book library and reading tracker. Built on .NET 9 Minimal APIs + Next.js 15 App Router.
-
-> **Status:** in progress. Phase 1 scaffolding committed. See [ADR-0015](docs/adr/0015-four-phase-orchestration.md) for the build plan.
+A single-user-per-account book library and reading tracker. Built on .NET 10 Minimal APIs + Next.js 15 App Router.
 
 ## Quickstart
 
-Requires: .NET 9 SDK, Node 20+, pnpm 9+.
+Requires: .NET 10 SDK, Node 20+, pnpm 9+.
 
 ```bash
 # Backend
 cd backend
 dotnet user-secrets init --project BookTracker.Api
 dotnet user-secrets set "Jwt:Secret" "$(openssl rand -base64 64)" --project BookTracker.Api
-dotnet ef database update --project BookTracker.Infrastructure --startup-project BookTracker.Api
+dotnet ef database update \
+  --project BookTracker.Infrastructure \
+  --startup-project BookTracker.Api
 dotnet run --project BookTracker.Api
 # API:     http://localhost:5000
 # Swagger: http://localhost:5000/swagger
@@ -55,6 +55,7 @@ Every major decision has a one-page ADR:
 - [0013 — Tailwind + shadcn/ui](docs/adr/0013-tailwind-shadcn.md)
 - [0014 — Comprehensive documentation](docs/adr/0014-comprehensive-docs.md)
 - [0015 — Four-phase orchestration](docs/adr/0015-four-phase-orchestration.md)
+- [0016 — .NET 10 bump](docs/adr/0016-net10-bump.md)
 
 ## Future: Public API
 
