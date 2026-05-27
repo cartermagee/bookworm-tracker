@@ -8,10 +8,18 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-blue-100 text-blue-800",
-        secondary: "bg-gray-100 text-gray-800",
-        destructive: "bg-red-100 text-red-800",
-        outline: "border border-gray-300 text-gray-700",
+        /** Reading — indigo palette, verified WCAG AA in light + dark */
+        default:
+          "bg-badge-reading-bg text-badge-reading-fg",
+        /** Read — green palette, verified WCAG AA in light + dark */
+        secondary:
+          "bg-badge-done-bg text-badge-done-fg",
+        /** Want to Read — bordered, neutral */
+        outline:
+          "border border-badge-want-border text-badge-want-fg",
+        /** Error / destructive usage */
+        destructive:
+          "bg-error-surface text-error-text",
       },
     },
     defaultVariants: { variant: "default" },

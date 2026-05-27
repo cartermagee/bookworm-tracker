@@ -22,6 +22,14 @@ interface BookFormProps {
   onCancel?: () => void;
 }
 
+/* Shared classes for form controls (input, select, textarea) */
+const fieldClass =
+  "flex w-full rounded-md border border-border bg-surface text-foreground px-3 py-2 text-sm " +
+  "placeholder:text-secondary " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary " +
+  "focus-visible:ring-offset-2 focus-visible:ring-offset-background " +
+  "disabled:cursor-not-allowed disabled:opacity-50";
+
 export const BookForm = forwardRef<BookFormHandle, BookFormProps>(
   function BookForm(
     { defaultValues, onSubmit, isPending, error, submitLabel, onCancel },
@@ -55,31 +63,42 @@ export const BookForm = forwardRef<BookFormHandle, BookFormProps>(
     const status = watch("status");
 
     return (
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        {/* Title */}
         <div className="space-y-1">
-          <Label htmlFor="title">Title *</Label>
+          <Label htmlFor="title">Title <span aria-hidden="true">*</span></Label>
           <Input
             id="title"
             placeholder="Book title"
+            aria-required="true"
+            aria-describedby={errors.title ? "title-error" : undefined}
             {...register("title")}
           />
           {errors.title && (
-            <p className="text-sm text-red-600">{errors.title.message}</p>
+            <p id="title-error" role="alert" className="text-sm text-error-text">
+              {errors.title.message}
+            </p>
           )}
         </div>
 
+        {/* Author */}
         <div className="space-y-1">
-          <Label htmlFor="author">Author *</Label>
+          <Label htmlFor="author">Author <span aria-hidden="true">*</span></Label>
           <Input
             id="author"
             placeholder="Author name"
+            aria-required="true"
+            aria-describedby={errors.author ? "author-error" : undefined}
             {...register("author")}
           />
           {errors.author && (
-            <p className="text-sm text-red-600">{errors.author.message}</p>
+            <p id="author-error" role="alert" className="text-sm text-error-text">
+              {errors.author.message}
+            </p>
           )}
         </div>
 
+        {/* ISBN */}
         <div className="space-y-1">
           <Label htmlFor="isbn">ISBN</Label>
           <Input
@@ -89,28 +108,34 @@ export const BookForm = forwardRef<BookFormHandle, BookFormProps>(
           />
         </div>
 
+        {/* Cover URL */}
         <div className="space-y-1">
           <Label htmlFor="coverUrl">Cover URL</Label>
           <Input
             id="coverUrl"
             type="url"
             placeholder="https://…"
+            aria-describedby={errors.coverUrl ? "coverUrl-error" : undefined}
             {...register("coverUrl")}
           />
           {errors.coverUrl && (
-            <p className="text-sm text-red-600">{errors.coverUrl.message}</p>
+            <p id="coverUrl-error" role="alert" className="text-sm text-error-text">
+              {errors.coverUrl.message}
+            </p>
           )}
         </div>
 
+        {/* Status */}
         <div className="space-y-1">
-          <Label htmlFor="status">Status *</Label>
+          <Label htmlFor="status">Status <span aria-hidden="true">*</span></Label>
           <Controller
             name="status"
             control={control}
             render={({ field }) => (
               <select
                 id="status"
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                aria-required="true"
+                className={`${fieldClass} h-10`}
                 {...field}
               >
                 <option value="wantToRead">Want to Read</option>
@@ -121,6 +146,7 @@ export const BookForm = forwardRef<BookFormHandle, BookFormProps>(
           />
         </div>
 
+        {/* Rating */}
         <div className="space-y-1">
           <Label htmlFor="rating">Rating (1–5)</Label>
           <Input
@@ -129,22 +155,30 @@ export const BookForm = forwardRef<BookFormHandle, BookFormProps>(
             min={1}
             max={5}
             placeholder="Optional"
+            aria-describedby={errors.rating ? "rating-error" : undefined}
             {...register("rating", {
               setValueAs: (v: unknown) =>
                 v === "" || v == null ? null : parseInt(String(v), 10),
             })}
           />
           {errors.rating && (
-            <p className="text-sm text-red-600">{errors.rating.message}</p>
+            <p id="rating-error" role="alert" className="text-sm text-error-text">
+              {errors.rating.message}
+            </p>
           )}
         </div>
 
+        {/* Date finished — only shown when status = read */}
         {status === "read" && (
           <div className="space-y-1">
-            <Label htmlFor="dateFinished">Date Finished *</Label>
+            <Label htmlFor="dateFinished">
+              Date Finished <span aria-hidden="true">*</span>
+            </Label>
             <Input
               id="dateFinished"
               type="date"
+              aria-required="true"
+              aria-describedby={errors.dateFinished ? "dateFinished-error" : undefined}
               {...register("dateFinished", {
                 setValueAs: (v: unknown) =>
                   v === "" || v == null
@@ -153,26 +187,28 @@ export const BookForm = forwardRef<BookFormHandle, BookFormProps>(
               })}
             />
             {errors.dateFinished && (
-              <p className="text-sm text-red-600">
+              <p id="dateFinished-error" role="alert" className="text-sm text-error-text">
                 {errors.dateFinished.message}
               </p>
             )}
           </div>
         )}
 
+        {/* Notes */}
         <div className="space-y-1">
           <Label htmlFor="notes">Notes</Label>
           <textarea
             id="notes"
             rows={4}
             placeholder="Your thoughts…"
-            className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className={fieldClass}
             {...register("notes")}
           />
         </div>
 
+        {/* Mutation error */}
         {error && (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error-text">
             {error.message}
           </p>
         )}

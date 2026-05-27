@@ -13,21 +13,45 @@ interface BookListProps {
 
 export function BookList({ books, isLoading, error }: BookListProps) {
   if (isLoading) {
-    return <p className="text-gray-500">Loading your library…</p>;
+    return (
+      <div
+        role="status"
+        aria-label="Loading your library"
+        className="grid gap-3 sm:grid-cols-2"
+      >
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-28 rounded-xl border border-border bg-surface animate-pulse"
+          />
+        ))}
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <p className="text-red-600">Failed to load books: {error.message}</p>
+      <p role="alert" className="rounded-lg bg-error-surface px-4 py-3 text-sm text-error-text">
+        Failed to load books: {error.message}
+      </p>
     );
   }
 
   if (books.length === 0) {
     return (
-      <div className="py-16 text-center text-gray-500">
-        <p className="text-lg">Your library is empty.</p>
-        <Link href="/library/new">
-          <Button className="mt-4">Add your first book</Button>
+      <div className="py-20 text-center">
+        <p
+          aria-hidden="true"
+          className="mb-3 text-5xl"
+        >
+          📚
+        </p>
+        <p className="text-lg font-medium text-foreground">Your library is empty</p>
+        <p className="mt-1 text-sm text-secondary">
+          Add your first book to get started.
+        </p>
+        <Link href="/library/new" className="inline-block mt-5">
+          <Button>Add your first book</Button>
         </Link>
       </div>
     );

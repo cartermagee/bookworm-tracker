@@ -44,19 +44,19 @@ export default function NewBookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur px-6 py-4">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <h1 className="text-xl font-semibold">Add a Book</h1>
+          <h1 className="text-xl font-semibold text-foreground">Add a Book</h1>
           <Link href="/library">
             <Button variant="ghost" size="sm">
-              Cancel
+              ← Back
             </Button>
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl p-6 space-y-6">
+      <main id="main-content" className="mx-auto max-w-2xl space-y-6 p-6">
         <OpenLibrarySearch onSelect={handleSelect} />
 
         <Card>

@@ -47,24 +47,30 @@ export default function BookDetailPage({ params }: PageProps) {
     router.push("/library");
   }
 
+  /* Loading */
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-500">Loading…</p>
+      <div
+        role="status"
+        aria-label="Loading book"
+        className="flex min-h-screen items-center justify-center"
+      >
+        <div className="h-48 w-full max-w-2xl rounded-xl border border-border bg-surface animate-pulse mx-6" />
       </div>
     );
   }
 
+  /* Error / not found */
   if (error || !book) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center p-6">
         <div className="text-center">
-          <p className="text-red-600">
+          <p role="alert" className="text-error-text">
             {error?.message ?? "Book not found."}
           </p>
           <Link href="/library">
             <Button className="mt-4" variant="outline">
-              Back to library
+              ← Back to library
             </Button>
           </Link>
         </div>
@@ -72,20 +78,27 @@ export default function BookDetailPage({ params }: PageProps) {
     );
   }
 
+  const stars = book.rating ?? 0;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur px-6 py-4">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <Link
             href="/library"
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
           >
             ← Library
           </Link>
           <div className="flex gap-2">
             {!isEditing && (
               <>
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                >
                   Edit
                 </Button>
                 <Button
@@ -93,6 +106,7 @@ export default function BookDetailPage({ params }: PageProps) {
                   variant="destructive"
                   onClick={handleDelete}
                   disabled={deleteBook.isPending}
+                  aria-label={`Delete "${book.title}" from library`}
                 >
                   {deleteBook.isPending ? "Deleting…" : "Delete"}
                 </Button>
@@ -102,58 +116,68 @@ export default function BookDetailPage({ params }: PageProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl p-6">
+      <main id="main-content" className="mx-auto max-w-2xl p-6">
         {!isEditing ? (
-          /* View mode */
+          /* ── View mode ─────────────────────────────────────────── */
           <Card>
             <CardContent className="p-6">
               <div className="flex gap-6">
+                {/* Cover */}
                 {book.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic; next/image requires known dimensions or remotePatterns for every CDN
+                  // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic
                   <img
                     src={book.coverUrl}
-                    alt={book.title}
-                    className="h-40 w-28 rounded object-cover shadow"
+                    alt={`Cover of ${book.title}`}
+                    className="h-40 w-28 shrink-0 rounded-lg object-cover shadow-md"
                   />
                 ) : (
-                  <div className="flex h-40 w-28 items-center justify-center rounded bg-gray-100 text-4xl shadow">
+                  <div
+                    aria-hidden="true"
+                    className="flex h-40 w-28 shrink-0 items-center justify-center rounded-lg bg-surface-alt text-4xl shadow-sm"
+                  >
                     📖
                   </div>
                 )}
-                <div className="flex flex-1 flex-col gap-2">
-                  <h2 className="text-2xl font-semibold leading-tight">
+
+                {/* Details */}
+                <div className="flex flex-1 flex-col gap-2 min-w-0">
+                  <h1 className="text-2xl font-semibold leading-tight text-foreground">
                     {book.title}
-                  </h2>
-                  <p className="text-gray-600">{book.author}</p>
-                  <Badge variant={STATUS_BADGE_VARIANT[book.status]}>
+                  </h1>
+                  <p className="text-secondary">{book.author}</p>
+
+                  <Badge variant={STATUS_BADGE_VARIANT[book.status]} className="self-start">
                     {STATUS_LABELS[book.status]}
                   </Badge>
-                  {book.rating != null && (
-                    <p className="text-yellow-500">
-                      {"★".repeat(book.rating)}
-                      {"☆".repeat(5 - book.rating)}
+
+                  {stars > 0 && (
+                    <p
+                      className="text-star text-lg"
+                      aria-label={`Rated ${stars} out of 5 stars`}
+                    >
+                      {"★".repeat(stars)}{"☆".repeat(5 - stars)}
                     </p>
                   )}
+
                   {book.isbn && (
-                    <p className="text-sm text-gray-500">ISBN: {book.isbn}</p>
+                    <p className="text-sm text-secondary">ISBN: {book.isbn}</p>
                   )}
                   {book.dateFinished && (
-                    <p className="text-sm text-gray-500">
-                      Finished:{" "}
-                      {new Date(book.dateFinished).toLocaleDateString()}
+                    <p className="text-sm text-secondary">
+                      Finished: {new Date(book.dateFinished).toLocaleDateString()}
                     </p>
                   )}
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-secondary">
                     Added: {new Date(book.dateAdded).toLocaleDateString()}
                   </p>
                 </div>
               </div>
+
+              {/* Notes */}
               {book.notes && (
-                <div className="mt-6 rounded-md bg-gray-50 p-4">
-                  <p className="mb-1 text-sm font-medium text-gray-700">
-                    Notes
-                  </p>
-                  <p className="whitespace-pre-wrap text-sm text-gray-600">
+                <div className="mt-6 rounded-lg bg-surface-alt p-4">
+                  <p className="mb-1.5 text-sm font-semibold text-foreground">Notes</p>
+                  <p className="whitespace-pre-wrap text-sm text-secondary leading-relaxed">
                     {book.notes}
                   </p>
                 </div>
@@ -161,7 +185,7 @@ export default function BookDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
         ) : (
-          /* Edit mode */
+          /* ── Edit mode ─────────────────────────────────────────── */
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Edit Book</CardTitle>

@@ -11,8 +11,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       ref={ref}
       className={twMerge(
         clsx(
-          "flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm",
-          "placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
+          // Layout & shape
+          "flex h-10 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground",
+          // Placeholder
+          "placeholder:text-secondary",
+          // Focus ring — 3px gap so ring is visible on any surface
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+          "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          // Disabled
           "disabled:cursor-not-allowed disabled:opacity-50",
           className,
         ),

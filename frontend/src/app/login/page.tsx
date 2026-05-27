@@ -30,44 +30,64 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main
+      id="main-content"
+      className="flex min-h-screen items-center justify-center p-4"
+    >
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="text-center pb-2">
+          <p aria-hidden="true" className="text-3xl mb-1">📚</p>
           <CardTitle>Sign in to Bookworm</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            noValidate
+            aria-label="Sign in form"
+          >
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@example.com"
+                aria-required="true"
+                aria-describedby={errors.email ? "email-error" : undefined}
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
+                <p id="email-error" role="alert" className="text-sm text-error-text">
+                  {errors.email.message}
+                </p>
               )}
             </div>
+
             <div className="space-y-1">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="••••••••"
+                aria-required="true"
+                aria-describedby={errors.password ? "password-error" : undefined}
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-sm text-red-600">
+                <p id="password-error" role="alert" className="text-sm text-error-text">
                   {errors.password.message}
                 </p>
               )}
             </div>
+
             {login.error && (
-              <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error-text">
                 {login.error.message}
               </p>
             )}
+
             <Button
               type="submit"
               className="w-full"
@@ -76,9 +96,10 @@ export default function LoginPage() {
               {login.isPending ? "Signing in…" : "Sign in"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-gray-600">
+
+          <p className="mt-5 text-center text-sm text-secondary">
             No account?{" "}
-            <Link href="/register" className="text-blue-600 hover:underline">
+            <Link href="/register" className="text-primary hover:underline font-medium">
               Create one
             </Link>
           </p>

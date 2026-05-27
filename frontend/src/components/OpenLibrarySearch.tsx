@@ -33,55 +33,79 @@ export function OpenLibrarySearch({ onSelect }: OpenLibrarySearchProps) {
     setSearchQuery("");
   }
 
+  const hasResults =
+    showResults && !isSearching && searchResults && searchResults.length > 0;
+  const noResults =
+    showResults && !isSearching && searchResults && searchResults.length === 0;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">Search Open Library</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSearch} className="flex gap-2">
+        <form
+          onSubmit={handleSearch}
+          className="flex gap-2"
+          role="search"
+          aria-label="Search Open Library for books"
+        >
           <Input
             placeholder="Search by title or author…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="flex-1"
+            aria-label="Book search query"
           />
-          <Button type="submit" disabled={searchInput.length < 3}>
+          <Button
+            type="submit"
+            disabled={searchInput.length < 3}
+            aria-label="Search"
+          >
             Search
           </Button>
         </form>
 
-        {isSearching && (
-          <p className="mt-3 text-sm text-gray-500">Searching…</p>
-        )}
+        {/* Live region for screen readers */}
+        <div aria-live="polite" aria-atomic="true">
+          {isSearching && (
+            <p className="mt-3 text-sm text-secondary">Searching…</p>
+          )}
 
-        {showResults &&
-          !isSearching &&
-          searchResults &&
-          searchResults.length > 0 && (
-            <ul className="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 bg-white">
-              {searchResults.map((result) => (
+          {hasResults && (
+            <ul
+              className="mt-3 divide-y divide-border rounded-lg border border-border bg-surface"
+              aria-label="Search results — select a book to fill in the form"
+            >
+              {searchResults!.map((result) => (
                 <li key={result.workId}>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface-alt focus-visible:outline-none focus-visible:bg-surface-alt rounded-lg transition-colors"
                     onClick={() => handleSelect(result)}
+                    aria-label={`Select ${result.title} by ${result.author}${result.firstPublishYear ? `, published ${result.firstPublishYear}` : ""}`}
                   >
                     {result.coverUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic; next/image requires known dimensions or remotePatterns for every CDN
+                      // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic
                       <img
                         src={result.coverUrl}
-                        alt={result.title}
-                        className="h-12 w-8 rounded object-cover"
+                        alt=""
+                        aria-hidden="true"
+                        className="h-12 w-8 shrink-0 rounded object-cover"
                       />
                     ) : (
-                      <div className="flex h-12 w-8 items-center justify-center rounded bg-gray-100 text-lg">
+                      <div
+                        aria-hidden="true"
+                        className="flex h-12 w-8 shrink-0 items-center justify-center rounded bg-surface-alt text-lg"
+                      >
                         📖
                       </div>
                     )}
-                    <div>
-                      <p className="text-sm font-medium">{result.title}</p>
-                      <p className="text-xs text-gray-500">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {result.title}
+                      </p>
+                      <p className="text-xs text-secondary">
                         {result.author}
                         {result.firstPublishYear
                           ? ` · ${result.firstPublishYear}`
@@ -94,14 +118,12 @@ export function OpenLibrarySearch({ onSelect }: OpenLibrarySearchProps) {
             </ul>
           )}
 
-        {showResults &&
-          !isSearching &&
-          searchResults &&
-          searchResults.length === 0 && (
-            <p className="mt-3 text-sm text-gray-500">
+          {noResults && (
+            <p className="mt-3 text-sm text-secondary">
               No results found. Fill in the form manually below.
             </p>
           )}
+        </div>
       </CardContent>
     </Card>
   );

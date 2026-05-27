@@ -1,26 +1,167 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKEN SYSTEM
+   All colors live here as CSS custom properties.
+   Dark mode flips them automatically — no Tailwind dark: prefix needed.
+   color-scheme: light dark tells browsers (and Dark Reader) that
+   we handle both modes natively, so extensions back off gracefully.
+   ═══════════════════════════════════════════════════════════════ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --background:    #faf9f7;   /* page canvas — warm off-white */
+  --surface:       #ffffff;   /* card / panel face */
+  --surface-alt:   #f4f1ed;   /* subtle inset (notes, hover bg) */
+
+  /* Borders */
+  --border:        #e2ddd7;   /* standard separator */
+
+  /* Text */
+  --foreground:    #1a1614;   /* primary text */
+  --secondary:     #6b6560;   /* secondary / muted  ≥ 4.86:1 on --background */
+
+  /* Primary action — indigo */
+  --primary:       #4f46e5;
+  --primary-fg:    #ffffff;
+
+  /* Destructive — red-600 (4.86:1 on white) */
+  --destructive:    #dc2626;
+  --destructive-fg: #ffffff;
+
+  /* Error feedback */
+  --error-surface:  #fef2f2;
+  --error-text:     #991b1b;   /* red-800, 6.95:1 on --error-surface */
+
+  /* Star rating — amber-700, 4.99:1 on --background */
+  --star:          #b45309;
+
+  /* Status badge colors (WCAG AA verified) */
+  --badge-reading-bg:  #e0e7ff;   /* indigo-100 */
+  --badge-reading-fg:  #3730a3;   /* indigo-800  — 10.4:1 */
+  --badge-done-bg:     #f0fdf4;   /* green-50 */
+  --badge-done-fg:     #166534;   /* green-800  — 6.95:1 */
+  --badge-want-border: #e2ddd7;
+  --badge-want-fg:     #6b6560;   /* 4.86:1 on --background */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background:    #17151b;
+    --surface:       #221e28;
+    --surface-alt:   #2c2735;
+
+    --border:        #3b3547;
+
+    --foreground:    #f0ecf8;
+    --secondary:     #b3acc0;   /* 6.63:1 on --surface */
+
+    --primary:       #818cf8;   /* indigo-400 */
+    --primary-fg:    #1e1b4b;   /* 5.04:1 on --primary */
+
+    --destructive:    #dc2626;  /* same red, still 4.86:1 on white */
+    --destructive-fg: #ffffff;
+
+    --error-surface:  #2d1515;
+    --error-text:     #fca5a5;  /* red-300, 7.2:1 on --error-surface */
+
+    --star:          #fbbf24;   /* amber-400, 8.72:1 on --surface */
+
+    --badge-reading-bg:  #312e81;   /* indigo-900 */
+    --badge-reading-fg:  #c7d2fe;   /* indigo-200 — 7.86:1 */
+    --badge-done-bg:     #14532d;   /* green-900 */
+    --badge-done-fg:     #86efac;   /* green-300 — 6.50:1 */
+    --badge-want-border: #3b3547;
+    --badge-want-fg:     #b3acc0;
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   TAILWIND 4 THEME MAPPING
+   @theme inline makes these CSS variables available as Tailwind
+   utility classes: bg-surface, text-secondary, border-border, etc.
+   ═══════════════════════════════════════════════════════════════ */
+
+@theme inline {
+  /* Surfaces */
+  --color-background:          var(--background);
+  --color-surface:             var(--surface);
+  --color-surface-alt:         var(--surface-alt);
+
+  /* Borders */
+  --color-border:              var(--border);
+
+  /* Text */
+  --color-foreground:          var(--foreground);
+  --color-secondary:           var(--secondary);
+
+  /* Primary */
+  --color-primary:             var(--primary);
+  --color-primary-fg:          var(--primary-fg);
+
+  /* Destructive */
+  --color-destructive:         var(--destructive);
+  --color-destructive-fg:      var(--destructive-fg);
+
+  /* Error */
+  --color-error-surface:       var(--error-surface);
+  --color-error-text:          var(--error-text);
+
+  /* Misc */
+  --color-star:                var(--star);
+
+  /* Badge tokens — avoids inline CSS var() syntax in components */
+  --color-badge-reading-bg:    var(--badge-reading-bg);
+  --color-badge-reading-fg:    var(--badge-reading-fg);
+  --color-badge-done-bg:       var(--badge-done-bg);
+  --color-badge-done-fg:       var(--badge-done-fg);
+  --color-badge-want-border:   var(--badge-want-border);
+  --color-badge-want-fg:       var(--badge-want-fg);
+
+  /* Typography */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code",
+    "Source Code Pro", Menlo, Consolas, monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Skip-to-main — keyboard / screen-reader accessibility */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1.25rem;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0 0 0.5rem 0.5rem;
+  text-decoration: none;
+  transition: top 0.1s ease;
+}
+.skip-link:focus {
+  top: 0;
+}
+
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* Smooth scroll, respecting reduced-motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }

@@ -7,7 +7,7 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     <div
       ref={ref}
       className={twMerge(
-        clsx("rounded-lg border border-gray-200 bg-white shadow-sm", className),
+        clsx("rounded-xl border border-border bg-surface shadow-sm", className),
       )}
       {...props}
     />
@@ -34,10 +34,7 @@ export const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={twMerge(
-      clsx(
-        "text-2xl font-semibold leading-none tracking-tight",
-        className,
-      ),
+      clsx("text-xl font-semibold leading-none tracking-tight text-foreground", className),
     )}
     {...props}
   />
