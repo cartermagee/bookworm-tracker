@@ -1,4 +1,4 @@
-import type { Variants } from "framer-motion";
+import type { Variants, TargetAndTransition } from "framer-motion";
 
 /**
  * Shared Framer Motion variants for Bookworm Tracker.
@@ -32,7 +32,7 @@ export const bookCard = {
     scale: 0.94,
     transition: { duration: 0.14, ease: "easeIn" },
   },
-} satisfies Variants & { exit: any };
+} satisfies Variants & { exit: TargetAndTransition };
 
 /** App header: slides down from above. */
 export const headerSlideDown: Variants = {
