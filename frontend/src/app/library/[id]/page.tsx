@@ -1,6 +1,7 @@
 "use client";
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
+import { m } from "framer-motion";
 import { useBook, useUpdateBook, useDeleteBook } from "@/lib/api/queries";
 import type { components } from "@/lib/api/types";
 
@@ -11,6 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { BookForm, type BookFormValues } from "@/components/BookForm";
 import { STATUS_LABELS, STATUS_BADGE_VARIANT } from "@/components/BookCard";
+import {
+  headerSlideDown,
+  heroScale,
+  detailText,
+  contentFadeUp,
+} from "@/lib/motion/variants";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -47,7 +54,7 @@ export default function BookDetailPage({ params }: PageProps) {
     router.push("/library");
   }
 
-  /* Loading */
+  /* ── Loading ──────────────────────────────────────────────────── */
   if (isLoading) {
     return (
       <div
@@ -60,7 +67,7 @@ export default function BookDetailPage({ params }: PageProps) {
     );
   }
 
-  /* Error / not found */
+  /* ── Error / not found ────────────────────────────────────────── */
   if (error || !book) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
@@ -82,8 +89,13 @@ export default function BookDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur px-6 py-4">
+      {/* ── Header ── slides down ─────────────────────────────────── */}
+      <m.header
+        variants={headerSlideDown}
+        initial="hidden"
+        animate="visible"
+        className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur px-6 py-4"
+      >
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <Link
             href="/library"
@@ -114,7 +126,7 @@ export default function BookDetailPage({ params }: PageProps) {
             )}
           </div>
         </div>
-      </header>
+      </m.header>
 
       <main id="main-content" className="mx-auto max-w-2xl p-6">
         {!isEditing ? (
@@ -122,31 +134,49 @@ export default function BookDetailPage({ params }: PageProps) {
           <Card>
             <CardContent className="p-6">
               <div className="flex gap-6">
-                {/* Cover */}
-                {book.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic
-                  <img
-                    src={book.coverUrl}
-                    alt={`Cover of ${book.title}`}
-                    className="h-40 w-28 shrink-0 rounded-lg object-cover shadow-md"
-                  />
-                ) : (
-                  <div
-                    aria-hidden="true"
-                    className="flex h-40 w-28 shrink-0 items-center justify-center rounded-lg bg-surface-alt text-4xl shadow-sm"
-                  >
-                    📖
-                  </div>
-                )}
+                {/*
+                 * Hero cover: springs in from scale 0.72 → 1.
+                 * The "book opening" moment of the page.
+                 */}
+                <m.div
+                  variants={heroScale}
+                  initial="hidden"
+                  animate="visible"
+                  className="shrink-0"
+                >
+                  {book.coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- cover URLs are external dynamic
+                    <img
+                      src={book.coverUrl}
+                      alt={`Cover of ${book.title}`}
+                      className="h-40 w-28 rounded-lg object-cover shadow-md"
+                    />
+                  ) : (
+                    <div
+                      aria-hidden="true"
+                      className="flex h-40 w-28 items-center justify-center rounded-lg bg-surface-alt text-4xl shadow-sm"
+                    >
+                      📖
+                    </div>
+                  )}
+                </m.div>
 
-                {/* Details */}
-                <div className="flex flex-1 flex-col gap-2 min-w-0">
+                {/* Text block rises 100 ms after the cover reveals */}
+                <m.div
+                  variants={detailText}
+                  initial="hidden"
+                  animate="visible"
+                  className="flex flex-1 flex-col gap-2 min-w-0"
+                >
                   <h1 className="text-2xl font-semibold leading-tight text-foreground">
                     {book.title}
                   </h1>
                   <p className="text-secondary">{book.author}</p>
 
-                  <Badge variant={STATUS_BADGE_VARIANT[book.status]} className="self-start">
+                  <Badge
+                    variant={STATUS_BADGE_VARIANT[book.status]}
+                    className="self-start"
+                  >
                     {STATUS_LABELS[book.status]}
                   </Badge>
 
@@ -160,27 +190,37 @@ export default function BookDetailPage({ params }: PageProps) {
                   )}
 
                   {book.isbn && (
-                    <p className="text-sm text-secondary">ISBN: {book.isbn}</p>
+                    <p className="text-sm text-secondary">
+                      ISBN: {book.isbn}
+                    </p>
                   )}
                   {book.dateFinished && (
                     <p className="text-sm text-secondary">
-                      Finished: {new Date(book.dateFinished).toLocaleDateString()}
+                      Finished:{" "}
+                      {new Date(book.dateFinished).toLocaleDateString()}
                     </p>
                   )}
                   <p className="text-sm text-secondary">
                     Added: {new Date(book.dateAdded).toLocaleDateString()}
                   </p>
-                </div>
+                </m.div>
               </div>
 
-              {/* Notes */}
+              {/* Notes section fades up after the details */}
               {book.notes && (
-                <div className="mt-6 rounded-lg bg-surface-alt p-4">
-                  <p className="mb-1.5 text-sm font-semibold text-foreground">Notes</p>
+                <m.div
+                  variants={contentFadeUp}
+                  initial="hidden"
+                  animate="visible"
+                  className="mt-6 rounded-lg bg-surface-alt p-4"
+                >
+                  <p className="mb-1.5 text-sm font-semibold text-foreground">
+                    Notes
+                  </p>
                   <p className="whitespace-pre-wrap text-sm text-secondary leading-relaxed">
                     {book.notes}
                   </p>
-                </div>
+                </m.div>
               )}
             </CardContent>
           </Card>

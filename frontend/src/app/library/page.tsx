@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { m } from "framer-motion";
 import { useBooks, useLogout } from "@/lib/api/queries";
 import type { components } from "@/lib/api/types";
 
@@ -8,6 +9,7 @@ type BookStatus = components["schemas"]["BookStatus"];
 import { Button } from "@/components/ui/button";
 import { BookList } from "@/components/BookList";
 import { STATUS_LABELS } from "@/components/BookCard";
+import { headerSlideDown, contentFadeUp } from "@/lib/motion/variants";
 
 export default function LibraryPage() {
   const { data: books, isLoading, error } = useBooks();
@@ -31,8 +33,13 @@ export default function LibraryPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ── App header ──────────────────────────────────────────── */}
-      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur px-6 py-4">
+      {/* ── App header — slides down on mount ───────────────────── */}
+      <m.header
+        variants={headerSlideDown}
+        initial="hidden"
+        animate="visible"
+        className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur px-6 py-4"
+      >
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <span className="text-xl font-semibold text-foreground">
             <span aria-hidden="true">📚 </span>Bookworm
@@ -51,17 +58,22 @@ export default function LibraryPage() {
             </Button>
           </div>
         </div>
-      </header>
+      </m.header>
 
-      {/* ── Main content ─────────────────────────────────────────── */}
-      <main id="main-content" className="mx-auto max-w-4xl p-6">
+      {/* ── Main content — fades up just after header ────────────── */}
+      <m.main
+        id="main-content"
+        variants={contentFadeUp}
+        initial="hidden"
+        animate="visible"
+        className="mx-auto max-w-4xl p-6"
+      >
         {/* Filter + Sort toolbar */}
         <div
           role="toolbar"
           aria-label="Filter and sort books"
           className="mb-6 flex flex-wrap items-center gap-2"
         >
-          {/* Status filters */}
           <div
             role="group"
             aria-label="Filter by reading status"
@@ -80,7 +92,6 @@ export default function LibraryPage() {
             ))}
           </div>
 
-          {/* Sort controls */}
           <div
             role="group"
             aria-label="Sort books"
@@ -114,11 +125,11 @@ export default function LibraryPage() {
           </p>
         )}
 
-        {/* Book grid — aria-live so screen readers announce changes */}
+        {/* Book grid */}
         <div aria-live="polite" aria-busy={isLoading}>
           <BookList books={filtered} isLoading={isLoading} error={error ?? null} />
         </div>
-      </main>
+      </m.main>
     </div>
   );
 }

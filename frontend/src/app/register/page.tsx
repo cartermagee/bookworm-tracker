@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { m } from "framer-motion";
 import { useRegister } from "@/lib/api/queries";
 import { registerSchema, type RegisterInput } from "@/lib/validation/auth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { authCard } from "@/lib/motion/variants";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -34,77 +36,90 @@ export default function RegisterPage() {
       id="main-content"
       className="flex min-h-screen items-center justify-center p-4"
     >
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-2">
-          <p aria-hidden="true" className="text-3xl mb-1">📚</p>
-          <CardTitle>Create your account</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
-            noValidate
-            aria-label="Create account form"
-          >
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                aria-required="true"
-                aria-describedby={errors.email ? "email-error" : undefined}
-                {...register("email")}
-              />
-              {errors.email && (
-                <p id="email-error" role="alert" className="text-sm text-error-text">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="password">Password (min 8 chars)</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                placeholder="••••••••"
-                aria-required="true"
-                aria-describedby={errors.password ? "password-error" : undefined}
-                {...register("password")}
-              />
-              {errors.password && (
-                <p id="password-error" role="alert" className="text-sm text-error-text">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {registerMutation.error && (
-              <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error-text">
-                {registerMutation.error.message}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting || registerMutation.isPending}
+      <m.div
+        variants={authCard}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-md"
+      >
+        <Card>
+          <CardHeader className="text-center pb-2">
+            <p aria-hidden="true" className="text-3xl mb-1 select-none">📚</p>
+            <CardTitle>Create your account</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4"
+              noValidate
+              aria-label="Create account form"
             >
-              {registerMutation.isPending ? "Creating account…" : "Create account"}
-            </Button>
-          </form>
+              <div className="space-y-1">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  aria-required="true"
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p id="email-error" role="alert" className="text-sm text-error-text">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-          <p className="mt-5 text-center text-sm text-secondary">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline font-medium">
-              Sign in
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+              <div className="space-y-1">
+                <Label htmlFor="password">Password (min 8 chars)</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  aria-required="true"
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p id="password-error" role="alert" className="text-sm text-error-text">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {registerMutation.error && (
+                <p
+                  role="alert"
+                  className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error-text"
+                >
+                  {registerMutation.error.message}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || registerMutation.isPending}
+              >
+                {registerMutation.isPending ? "Creating account…" : "Create account"}
+              </Button>
+            </form>
+
+            <p className="mt-5 text-center text-sm text-secondary">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-primary hover:underline font-medium"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </m.div>
     </main>
   );
 }

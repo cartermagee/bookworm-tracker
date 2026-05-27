@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { m } from "framer-motion";
 import { useLogin } from "@/lib/api/queries";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { authCard } from "@/lib/motion/variants";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,77 +36,90 @@ export default function LoginPage() {
       id="main-content"
       className="flex min-h-screen items-center justify-center p-4"
     >
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-2">
-          <p aria-hidden="true" className="text-3xl mb-1">📚</p>
-          <CardTitle>Sign in to Bookworm</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
-            noValidate
-            aria-label="Sign in form"
-          >
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                aria-required="true"
-                aria-describedby={errors.email ? "email-error" : undefined}
-                {...register("email")}
-              />
-              {errors.email && (
-                <p id="email-error" role="alert" className="text-sm text-error-text">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                aria-required="true"
-                aria-describedby={errors.password ? "password-error" : undefined}
-                {...register("password")}
-              />
-              {errors.password && (
-                <p id="password-error" role="alert" className="text-sm text-error-text">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            {login.error && (
-              <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error-text">
-                {login.error.message}
-              </p>
-            )}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting || login.isPending}
+      <m.div
+        variants={authCard}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-md"
+      >
+        <Card>
+          <CardHeader className="text-center pb-2">
+            <p aria-hidden="true" className="text-3xl mb-1 select-none">📚</p>
+            <CardTitle>Sign in to Bookworm</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4"
+              noValidate
+              aria-label="Sign in form"
             >
-              {login.isPending ? "Signing in…" : "Sign in"}
-            </Button>
-          </form>
+              <div className="space-y-1">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  aria-required="true"
+                  aria-describedby={errors.email ? "email-error" : undefined}
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p id="email-error" role="alert" className="text-sm text-error-text">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-          <p className="mt-5 text-center text-sm text-secondary">
-            No account?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
-              Create one
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+              <div className="space-y-1">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  aria-required="true"
+                  aria-describedby={errors.password ? "password-error" : undefined}
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p id="password-error" role="alert" className="text-sm text-error-text">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {login.error && (
+                <p
+                  role="alert"
+                  className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error-text"
+                >
+                  {login.error.message}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || login.isPending}
+              >
+                {login.isPending ? "Signing in…" : "Sign in"}
+              </Button>
+            </form>
+
+            <p className="mt-5 text-center text-sm text-secondary">
+              No account?{" "}
+              <Link
+                href="/register"
+                className="text-primary hover:underline font-medium"
+              >
+                Create one
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
+      </m.div>
     </main>
   );
 }
