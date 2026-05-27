@@ -96,7 +96,7 @@ export function BookList({ books, isLoading, error }: BookListProps) {
           <m.div
             key={book.id}
             variants={bookCard}
-            exit={bookCard.exit as object}
+            exit={bookCard.exit}
             layout
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}

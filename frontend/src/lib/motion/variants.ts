@@ -20,7 +20,7 @@ export const staggerContainer: Variants = {
 };
 
 /** Book card: rises 16 px + fades in; shrinks + fades on exit. */
-export const bookCard: Variants = {
+export const bookCard = {
   hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
@@ -32,7 +32,7 @@ export const bookCard: Variants = {
     scale: 0.94,
     transition: { duration: 0.14, ease: "easeIn" },
   },
-};
+} satisfies Variants & { exit: any };
 
 /** App header: slides down from above. */
 export const headerSlideDown: Variants = {
