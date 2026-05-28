@@ -14,7 +14,9 @@ export default defineConfig({
     // Emulate prefers-reduced-motion: reduce so Framer Motion (via MotionConfig)
     // skips animations and jumps to final state — prevents opacity-0 timing
     // failures in headless Chromium where requestAnimationFrame is throttled.
-    reducedMotion: "reduce",
+    contextOptions: {
+      reducedMotion: "reduce",
+    },
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
