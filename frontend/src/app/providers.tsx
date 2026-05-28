@@ -1,6 +1,6 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, domAnimation, MotionConfig } from "framer-motion";
 import { useState, type ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -22,7 +22,16 @@ export function Providers({ children }: { children: ReactNode }) {
        * can be enforced at build time.
        */}
       <LazyMotion features={domAnimation}>
-        {children}
+        {/*
+         * reducedMotion="user": respects prefers-reduced-motion at runtime
+         * (ADA requirement) AND makes Playwright tests reliable — when
+         * playwright.config sets reducedMotion: "reduce", Framer Motion
+         * jumps straight to the final animation state so no element is
+         * ever invisible due to RAF throttling in headless Chromium.
+         */}
+        <MotionConfig reducedMotion="user">
+          {children}
+        </MotionConfig>
       </LazyMotion>
     </QueryClientProvider>
   );
