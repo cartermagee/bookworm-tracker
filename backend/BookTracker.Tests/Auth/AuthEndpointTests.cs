@@ -1,9 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
 
+using BookTracker.Api.Infrastructure.Auth;
 using BookTracker.Tests.Fixtures;
 
 using FluentAssertions;
+
+using Microsoft.AspNetCore.Hosting;
 
 using Xunit;
 
@@ -108,5 +111,84 @@ public class AuthEndpointTests
         await TestHelpers.Login(client, "logout@example.com", "ValidPassword1!");
         var response = await client.PostAsync("/api/auth/logout", null);
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // ── /api/auth/refresh ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Refresh_after_login_returns_204_with_new_cookie()
+    {
+        await using var factory = new ApiFactory();
+        var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+        await TestHelpers.Register(client, "refresh@example.com", "ValidPassword1!");
+        await TestHelpers.Login(client, "refresh@example.com", "ValidPassword1!");
+
+        var response = await client.PostAsync("/api/auth/refresh", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.Headers.Should().ContainKey("Set-Cookie");
+    }
+
+    [Fact]
+    public async Task Refresh_with_expired_token_returns_204_with_new_cookie()
+    {
+        // ExpiredTokenApiFactory issues tokens with ExpiryMinutes=-2 so they are
+        // born expired (beyond the 1-minute clock skew). The refresh endpoint must
+        // still accept them because it validates with ValidateLifetime=false.
+        await using var factory = new ExpiredTokenApiFactory();
+        var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+        await TestHelpers.Register(client, "expired@example.com", "ValidPassword1!");
+        await TestHelpers.Login(client, "expired@example.com", "ValidPassword1!");
+
+        var response = await client.PostAsync("/api/auth/refresh", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        response.Headers.Should().ContainKey("Set-Cookie");
+    }
+
+    [Fact]
+    public async Task Refresh_without_cookie_returns_401()
+    {
+        await using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        // No login — no cookie in the jar.
+        var response = await client.PostAsync("/api/auth/refresh", null);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Refresh_with_tampered_token_returns_401()
+    {
+        await using var factory = new ApiFactory();
+        // Disable automatic cookie handling so we can inject a bad cookie manually.
+        var client = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            HandleCookies = false
+        });
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
+        request.Headers.Add("Cookie", $"{CookieJwtBearerEvents.CookieName}=tampered.header.signature");
+
+        var response = await client.SendAsync(request);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    /// <summary>
+    /// Issues tokens with ExpiryMinutes=-2 so the JWT's <c>exp</c> claim is 2 minutes in
+    /// the past — beyond the 1-minute clock skew used by the standard validator.
+    /// </summary>
+    private sealed class ExpiredTokenApiFactory : ApiFactory
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            base.ConfigureWebHost(builder);
+            builder.UseSetting("Jwt:ExpiryMinutes", "-2");
+        }
     }
 }

@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 using BookTracker.Api.Infrastructure.Auth;
 using BookTracker.Api.Infrastructure.RateLimiting;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BookTracker.Api.Features.Auth;
 
@@ -31,6 +34,9 @@ public static class AuthEndpoints
             .RequireRateLimiting(RateLimitingConfiguration.AuthPolicy);
 
         group.MapPost("/logout", Logout);
+
+        group.MapPost("/refresh", Refresh)
+            .RequireRateLimiting(RateLimitingConfiguration.AuthPolicy);
 
         group.MapGet("/me", Me).RequireAuthorization();
 
@@ -104,6 +110,61 @@ public static class AuthEndpoints
             return TypedResults.Problem(statusCode: 401, title: "Not authenticated.",
                 extensions: new Dictionary<string, object?> { ["errorCode"] = "UNAUTHENTICATED" });
         return TypedResults.Ok(new MeResponse(id, email));
+    }
+
+    private static async Task<Results<NoContent, UnauthorizedHttpResult>> Refresh(
+        HttpContext httpContext,
+        UserManager<IdentityUser> userManager,
+        JwtTokenService jwtService,
+        IHostEnvironment env,
+        IConfiguration configuration)
+    {
+        // Read the existing token from the httpOnly cookie — do not trust Authorization header.
+        if (!httpContext.Request.Cookies.TryGetValue(CookieJwtBearerEvents.CookieName, out var token)
+            || string.IsNullOrEmpty(token))
+            return TypedResults.Unauthorized();
+
+        // Validate signature, issuer, and audience — but NOT lifetime (that's the point).
+        var secret = configuration["Jwt:Secret"];
+        if (string.IsNullOrEmpty(secret))
+            return TypedResults.Unauthorized();
+
+        var validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = configuration["Jwt:Issuer"] ?? "BookTracker",
+            ValidateAudience = true,
+            ValidAudience = configuration["Jwt:Audience"] ?? "BookTracker",
+            ValidateLifetime = false,   // allow expired tokens — that's the whole point
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ClockSkew = TimeSpan.FromMinutes(1),
+        };
+
+        ClaimsPrincipal principal;
+        try
+        {
+            principal = new JwtSecurityTokenHandler().ValidateToken(token, validationParameters, out _);
+        }
+        catch
+        {
+            // Tampered, wrong issuer, wrong key — reject.
+            return TypedResults.Unauthorized();
+        }
+
+        // Extract user ID from the sub claim.
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return TypedResults.Unauthorized();
+
+        // Verify the user still exists and is not locked out.
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null || await userManager.IsLockedOutAsync(user))
+            return TypedResults.Unauthorized();
+
+        // Issue a fresh token in the same httpOnly cookie.
+        AppendAuthCookie(httpContext, jwtService.Create(user), env);
+        return TypedResults.NoContent();
     }
 
     private static void AppendAuthCookie(HttpContext httpContext, string token, IHostEnvironment env)

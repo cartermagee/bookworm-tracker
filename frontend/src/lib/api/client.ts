@@ -7,11 +7,20 @@
 const API_BASE_URL =
   process.env["NEXT_PUBLIC_API_BASE_URL"] ?? "http://localhost:5000";
 
+// Auth endpoints that must never trigger a silent-refresh retry (would cause loops).
+const NO_REFRESH_PATHS = new Set([
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/refresh",
+  "/api/auth/logout",
+]);
+
 async function apiFetch(
   path: string,
   init: RequestInit = {},
+  _retry = true,
 ): Promise<Response> {
-  return fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: "include",
     headers: {
@@ -19,9 +28,37 @@ async function apiFetch(
       ...(init.headers ?? {}),
     },
   });
+
+  // On 401, attempt a silent token refresh then replay the original request once.
+  if (response.status === 401 && _retry && !NO_REFRESH_PATHS.has(path)) {
+    const refreshed = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (refreshed.ok) {
+      // Token renewed — replay the original request (no further retries).
+      return apiFetch(path, init, false);
+    }
+
+    // Refresh failed (expired too long ago, user deleted, locked out, etc.).
+    // Redirect to login on the client; on the server there is no window.
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+  }
+
+  return response;
 }
 
 // Auth
+export async function apiRefresh(): Promise<Response> {
+  return fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
+
 export async function apiRegister(
   email: string,
   password: string,
