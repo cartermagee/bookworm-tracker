@@ -28,6 +28,10 @@ export default function BookDetailPage({ params }: PageProps) {
   const updateBook = useUpdateBook(id);
   const deleteBook = useDeleteBook();
   const [isEditing, setIsEditing] = useState(false);
+  // Counts completed saves. When > 0 the view-mode panels use initial={false}
+  // so they appear instantly at their animate target rather than fading in
+  // from opacity:0 — which would stall in headless Chromium (RAF throttled).
+  const [saveCount, setSaveCount] = useState(0);
 
   async function onSubmit(data: BookFormValues) {
     try {
@@ -42,6 +46,7 @@ export default function BookDetailPage({ params }: PageProps) {
         notes: data.notes ?? null,
         dateFinished: data.dateFinished ?? null,
       });
+      setSaveCount((n) => n + 1);
       setIsEditing(false);
     } catch {
       // error displayed via updateBook.error
@@ -140,7 +145,7 @@ export default function BookDetailPage({ params }: PageProps) {
                  */}
                 <m.div
                   variants={heroScale}
-                  initial="hidden"
+                  initial={saveCount === 0 ? "hidden" : false}
                   animate="visible"
                   className="shrink-0"
                 >
@@ -164,7 +169,7 @@ export default function BookDetailPage({ params }: PageProps) {
                 {/* Text block rises 100 ms after the cover reveals */}
                 <m.div
                   variants={detailText}
-                  initial="hidden"
+                  initial={saveCount === 0 ? "hidden" : false}
                   animate="visible"
                   className="flex flex-1 flex-col gap-2 min-w-0"
                 >
@@ -210,7 +215,7 @@ export default function BookDetailPage({ params }: PageProps) {
               {book.notes && (
                 <m.div
                   variants={contentFadeUp}
-                  initial="hidden"
+                  initial={saveCount === 0 ? "hidden" : false}
                   animate="visible"
                   className="mt-6 rounded-lg bg-surface-alt p-4"
                 >
