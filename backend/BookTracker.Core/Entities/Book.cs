@@ -4,7 +4,7 @@ namespace BookTracker.Core.Entities;
 /// A book in a user's personal library. Multi-tenancy is enforced by <see cref="UserId"/>;
 /// every query in the API layer filters by the authenticated user's id.
 /// </summary>
-public class Book
+public sealed class Book
 {
     public Guid Id { get; set; }
 

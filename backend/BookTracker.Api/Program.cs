@@ -6,6 +6,8 @@ using BookTracker.Api.Features.Books;
 using BookTracker.Api.Features.Health;
 using BookTracker.Api.Features.OpenLibrary;
 using BookTracker.Api.Infrastructure.Auth;
+using BookTracker.Api.Infrastructure.Exceptions;
+using BookTracker.Api.Infrastructure.OpenApi;
 using BookTracker.Api.Infrastructure.ProblemDetails;
 using BookTracker.Api.Infrastructure.RateLimiting;
 using BookTracker.Core.Abstractions;
@@ -15,7 +17,6 @@ using BookTracker.Infrastructure.Persistence;
 using FluentValidation;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +82,8 @@ builder.Services
         o.Password.RequireNonAlphanumeric = false;
         o.Password.RequiredLength = 8;
         o.User.RequireUniqueEmail = true;
+        o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        o.Lockout.MaxFailedAccessAttempts = 10;
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddSignInManager();
@@ -217,74 +220,3 @@ app.Run();
 
 // Expose Program so WebApplicationFactory<Program> can boot it from the test project.
 public partial class Program;
-
-/// <summary>
-/// Catch-all exception handler. In dev the ex.Message lands in `detail`;
-/// in prod it is suppressed (§2.1, ADR-0010).
-/// </summary>
-internal sealed class GlobalExceptionHandler(IHostEnvironment env, IProblemDetailsService problems) : IExceptionHandler
-{
-    private readonly IHostEnvironment _env = env;
-    private readonly IProblemDetailsService _problems = problems;
-
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
-    {
-        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        var pd = new Microsoft.AspNetCore.Mvc.ProblemDetails
-        {
-            Title = "An unexpected error occurred.",
-            Status = StatusCodes.Status500InternalServerError,
-            Type = "https://datatracker.ietf.org/doc/html/rfc7807",
-            Detail = _env.IsDevelopment() ? exception.Message : null,
-        };
-        pd.Extensions["traceId"] = httpContext.TraceIdentifier;
-
-        return await _problems.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = httpContext,
-            ProblemDetails = pd,
-            Exception = exception,
-        });
-    }
-}
-
-/// <summary>
-/// Adds all non-nullable object properties to the OpenAPI <c>required</c> array.
-/// <c>SupportNonNullableReferenceTypes()</c> removes <c>nullable:true</c> but doesn't
-/// populate <c>required[]</c> for positional record constructors; this filter bridges
-/// that gap so openapi-typescript emits <c>field: T</c> instead of <c>field?: T</c>.
-/// </summary>
-internal sealed class RequireNonNullablePropertiesSchemaFilter : ISchemaFilter
-{
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
-    {
-        if (schema.Properties is null || schema.Properties.Count == 0) return;
-        foreach (var (name, prop) in schema.Properties)
-        {
-            // A property is required when it is not nullable and not already in the set.
-            if (!prop.Nullable && !schema.Required.Contains(name))
-                schema.Required.Add(name);
-        }
-    }
-}
-
-/// <summary>
-/// Emits enum schemas as camelCase strings in the OpenAPI spec to match the
-/// JsonStringEnumConverter(JsonNamingPolicy.CamelCase) configured in JSON options.
-/// Without this Swashbuckle 7.x emits integer schemas for enums.
-/// </summary>
-internal sealed class CamelCaseStringEnumSchemaFilter : ISchemaFilter
-{
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
-    {
-        if (!context.Type.IsEnum) return;
-        schema.Type = "string";
-        schema.Format = null;
-        schema.Enum.Clear();
-        foreach (var name in Enum.GetNames(context.Type))
-        {
-            var camelName = char.ToLowerInvariant(name[0]) + name[1..];
-            schema.Enum.Add(new Microsoft.OpenApi.Any.OpenApiString(camelName));
-        }
-    }
-}

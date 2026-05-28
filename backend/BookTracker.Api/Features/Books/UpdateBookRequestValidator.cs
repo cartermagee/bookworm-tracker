@@ -18,6 +18,7 @@ public sealed class UpdateBookRequestValidator : AbstractValidator<UpdateBookReq
         RuleFor(x => x.OpenLibraryWorkId).MaximumLength(50);
         RuleFor(x => x.Notes).MaximumLength(5000);
         RuleFor(x => x.Rating).InclusiveBetween(1, 5).When(x => x.Rating.HasValue);
+        RuleFor(x => x.Status).IsInEnum();
 
         RuleFor(x => x.DateFinished)
             .NotNull().When(x => x.Status == BookStatus.Read)

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using BookTracker.Core.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace BookTracker.Infrastructure.OpenLibrary;
 
@@ -9,9 +10,10 @@ namespace BookTracker.Infrastructure.OpenLibrary;
 /// HTTP client for Open Library, implementing <see cref="IBookMetadataService"/>.
 /// Polly standard resilience (retry + timeout) is registered on the HttpClient in the host.
 /// </summary>
-public sealed class OpenLibraryClient(HttpClient httpClient) : IBookMetadataService
+public sealed class OpenLibraryClient(HttpClient httpClient, ILogger<OpenLibraryClient> logger) : IBookMetadataService
 {
     private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<OpenLibraryClient> _logger = logger;
 
     public async Task<IReadOnlyList<BookMetadataSearchResult>> SearchAsync(
         string query, int limit, CancellationToken cancellationToken)
@@ -65,9 +67,9 @@ public sealed class OpenLibraryClient(HttpClient httpClient) : IBookMetadataServ
                 coverUrl = coverId.HasValue ? $"https://covers.openlibrary.org/b/id/{coverId}-M.jpg" : null;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Editions fetch failure is non-fatal — return what we have
+            _logger.LogWarning(ex, "Failed to fetch editions for work {WorkId}; returning partial metadata", workId);
         }
 
         return new BookMetadata(
@@ -87,8 +89,9 @@ public sealed class OpenLibraryClient(HttpClient httpClient) : IBookMetadataServ
                 $"{authorKey}.json", cancellationToken: ct);
             return author?.Name;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning(ex, "Failed to fetch author name for key {AuthorKey}", authorKey);
             return null;
         }
     }

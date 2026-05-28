@@ -5,6 +5,8 @@ using BookTracker.Infrastructure.OpenLibrary;
 
 using FluentAssertions;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using Xunit;
 
 namespace BookTracker.Tests.OpenLibrary;
@@ -45,7 +47,7 @@ public class OpenLibraryClientTests
             }
             """;
 
-        var sut = new OpenLibraryClient(CreateClient(_ => JsonOk(json)));
+        var sut = new OpenLibraryClient(CreateClient(_ => JsonOk(json)), NullLogger<OpenLibraryClient>.Instance);
 
         var results = await sut.SearchAsync("Dune", 10, CancellationToken.None);
 
@@ -62,7 +64,7 @@ public class OpenLibraryClientTests
     {
         const string json = """{"docs": []}""";
 
-        var sut = new OpenLibraryClient(CreateClient(_ => JsonOk(json)));
+        var sut = new OpenLibraryClient(CreateClient(_ => JsonOk(json)), NullLogger<OpenLibraryClient>.Instance);
 
         var results = await sut.SearchAsync("nonexistent title xyz", 10, CancellationToken.None);
 
@@ -97,7 +99,7 @@ public class OpenLibraryClientTests
                 : new HttpResponseMessage(HttpStatusCode.NotFound);
         });
 
-        var sut = new OpenLibraryClient(client);
+        var sut = new OpenLibraryClient(client, NullLogger<OpenLibraryClient>.Instance);
 
         var result = await sut.GetByWorkIdAsync("OL123W", CancellationToken.None);
 
@@ -113,7 +115,8 @@ public class OpenLibraryClientTests
     public async Task GetByWorkIdAsync_not_found_returns_null()
     {
         var sut = new OpenLibraryClient(
-            CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound)));
+            CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound)),
+            NullLogger<OpenLibraryClient>.Instance);
 
         var result = await sut.GetByWorkIdAsync("MISSING", CancellationToken.None);
 

@@ -1,6 +1,8 @@
+using BookTracker.Api.Infrastructure.RateLimiting;
 using BookTracker.Core.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 
 namespace BookTracker.Api.Features.OpenLibrary;
@@ -14,7 +16,7 @@ public static class OpenLibraryEndpoints
             .WithTags("OpenLibrary")
             .RequireAuthorization();
 
-        group.MapGet("/search", Search);
+        group.MapGet("/search", Search).RequireRateLimiting(RateLimitingConfiguration.AuthPolicy);
         group.MapGet("/{olid}", GetByOlid);
 
         return app;

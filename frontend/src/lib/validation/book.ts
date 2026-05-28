@@ -27,7 +27,4 @@ export const createBookSchema = z
     },
   );
 
-export const updateBookSchema = createBookSchema;
-
 export type CreateBookInput = z.infer<typeof createBookSchema>;
-export type UpdateBookInput = z.infer<typeof updateBookSchema>;

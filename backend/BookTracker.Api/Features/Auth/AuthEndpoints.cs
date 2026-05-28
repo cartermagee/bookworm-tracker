@@ -76,7 +76,7 @@ public static class AuthEndpoints
         if (user is null)
             return InvalidCredentials();
 
-        var check = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
+        var check = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (!check.Succeeded)
             return InvalidCredentials();
 

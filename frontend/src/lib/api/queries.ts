@@ -7,7 +7,6 @@ import {
   apiListBooks,
   apiLogin,
   apiLogout,
-  apiMe,
   apiRegister,
   apiSearchOpenLibrary,
   apiUpdateBook,
@@ -16,28 +15,14 @@ import {
 import type { components } from "./types";
 
 type BookDto = components["schemas"]["BookDto"];
-type MeResponse = components["schemas"]["MeResponse"];
 type OpenLibrarySearchResult = components["schemas"]["OpenLibrarySearchResult"];
 
-export const queryKeys = {
+const queryKeys = {
   books: ["books"] as const,
   book: (id: string) => ["books", id] as const,
   me: ["me"] as const,
   openLibrarySearch: (q: string) => ["open-library", "search", q] as const,
 };
-
-export function useMe() {
-  return useQuery<MeResponse | null>({
-    queryKey: queryKeys.me,
-    queryFn: async () => {
-      const r = await apiMe();
-      if (r.status === 401) return null;
-      if (!r.ok) throw new Error("Failed to fetch user");
-      return r.json() as Promise<MeResponse>;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-}
 
 export function useBooks() {
   return useQuery<BookDto[]>({

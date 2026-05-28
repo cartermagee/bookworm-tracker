@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { registerUser, loginUser } from "./helpers/auth";
 
 // Unique email per run — avoids conflicts with leftover rows from previous runs.
 const email = `e2e-auth-${Date.now()}@example.com`;
@@ -8,12 +9,7 @@ test("register, reach /library, verify /me, logout, redirect, login again", asyn
   page,
 }) => {
   // ── Register ─────────────────────────────────────────────────────────────
-  await page.goto("/register");
-  await page.getByLabel("Email").fill(email);
-  // Label is "Password (min 8 chars)" — match with regex to be resilient.
-  await page.getByLabel(/Password/).fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
-  await page.waitForURL("/library");
+  await registerUser(page, email, password);
   await expect(page.getByText("Your library is empty")).toBeVisible();
 
   // ── /api/auth/me returns the registered email ─────────────────────────────
@@ -30,10 +26,7 @@ test("register, reach /library, verify /me, logout, redirect, login again", asyn
   await page.goto("/library");
   await expect(page).toHaveURL(/\/login/);
 
-  // ── Log back in via form → /library ──────────────────────────────────────
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL("/library");
+  // ── Log back in via helper → /library ────────────────────────────────────
+  await loginUser(page, email, password);
   await expect(page.getByText("Your library is empty")).toBeVisible();
 });

@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
+import { registerAndSaveState } from "./helpers/auth";
 
 // One user per run — sequential tests share this session.
 const email = `e2e-books-${Date.now()}@example.com`;
@@ -15,14 +16,12 @@ fs.writeFileSync(STATE_FILE, JSON.stringify({ cookies: [], origins: [] }));
 
 test.beforeAll(async ({ browser }) => {
   // Register and save the auth cookie so all tests start authenticated.
-  const page = await browser.newPage();
-  await page.goto("/register");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel(/Password/).fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
-  await page.waitForURL("/library");
-  await page.context().storageState({ path: STATE_FILE });
-  await page.close();
+  await registerAndSaveState(
+    await browser.newContext(),
+    email,
+    password,
+    STATE_FILE,
+  );
 });
 
 test.afterAll(() => {

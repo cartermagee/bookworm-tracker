@@ -2,7 +2,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { type LabelHTMLAttributes, forwardRef } from "react";
 
-export type LabelProps = LabelHTMLAttributes<HTMLLabelElement>;
+type LabelProps = LabelHTMLAttributes<HTMLLabelElement>;
 
 export const Label = forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, ...props }, ref) => (

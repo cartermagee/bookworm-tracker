@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { registerUser, loginUser } from "./helpers/auth";
 
 // Register one user for the authenticated-stay test.
 const email = `e2e-routes-${Date.now()}@example.com`;
@@ -6,11 +7,7 @@ const password = "testpassword";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
-  await page.goto("/register");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel(/Password/).fill(password);
-  await page.getByRole("button", { name: "Create account" }).click();
-  await page.waitForURL("/library");
+  await registerUser(page, email, password);
   await page.close();
 });
 
@@ -32,10 +29,6 @@ test("unauthenticated /library/<uuid> redirects to /login", async ({
 });
 
 test("authenticated user stays on /library", async ({ page }) => {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await page.waitForURL("/library");
+  await loginUser(page, email, password);
   await expect(page).toHaveURL("/library");
 });
