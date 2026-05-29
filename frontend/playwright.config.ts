@@ -13,7 +13,7 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     // Emulate prefers-reduced-motion: reduce so Framer Motion (via MotionConfig)
     // skips animations and jumps to final state — prevents opacity-0 timing
     // failures in headless Chromium where requestAnimationFrame is throttled.
