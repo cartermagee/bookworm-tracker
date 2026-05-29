@@ -56,7 +56,13 @@ test("edit a book title", async ({ page }) => {
   const titleInput = page.getByLabel("Title *");
   await titleInput.clear();
   await titleInput.fill("The Great Gatsby (Edited)");
+  // Wait for the PUT response before asserting — the API can be slow under
+  // SQLite write contention when parallel workers hit the same DB in CI.
+  const saved = page.waitForResponse(
+    (r) => r.url().includes("/api/books/") && r.request().method() === "PUT",
+  );
   await page.getByRole("button", { name: "Save Changes" }).click();
+  await saved;
   await expect(
     page.getByRole("heading", { name: "The Great Gatsby (Edited)" })
   ).toBeVisible();
@@ -67,7 +73,11 @@ test("delete a book", async ({ page }) => {
   await page.getByText("The Great Gatsby (Edited)").first().click();
   // Confirm the native browser dialog triggered by `confirm()` in the delete handler.
   page.once("dialog", (dialog) => dialog.accept());
+  const deleted = page.waitForResponse(
+    (r) => r.url().includes("/api/books/") && r.request().method() === "DELETE",
+  );
   await page.getByRole("button", { name: "Delete" }).click();
+  await deleted;
   await page.waitForURL("/library");
   await expect(page.getByText("The Great Gatsby")).not.toBeVisible();
 });

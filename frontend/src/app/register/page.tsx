@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRegister } from "@/lib/api/queries";
@@ -11,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const registerMutation = useRegister();
   const {
     register,
@@ -22,7 +20,7 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterInput) {
     try {
       await registerMutation.mutateAsync(data);
-      router.push("/library");
+      window.location.href = "/library";
     } catch {
       // error displayed via registerMutation.error
     }
