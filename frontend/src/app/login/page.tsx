@@ -23,7 +23,6 @@ export default function LoginPage() {
     try {
       await login.mutateAsync(data);
       router.push("/library");
-      router.refresh();
     } catch {
       // error displayed via login.error
     }

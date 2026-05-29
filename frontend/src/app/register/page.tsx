@@ -23,7 +23,6 @@ export default function RegisterPage() {
     try {
       await registerMutation.mutateAsync(data);
       router.push("/library");
-      router.refresh();
     } catch {
       // error displayed via registerMutation.error
     }

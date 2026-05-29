@@ -66,9 +66,9 @@ export function useUpdateBook(id: string) {
       if (!r.ok) throw new Error("Failed to update book");
       return r.json() as Promise<BookDto>;
     },
-    onSuccess: () => {
+    onSuccess: (updatedBook: BookDto) => {
+      qc.setQueryData(queryKeys.book(id), updatedBook);
       void qc.invalidateQueries({ queryKey: queryKeys.books });
-      void qc.invalidateQueries({ queryKey: queryKeys.book(id) });
     },
   });
 }
@@ -84,9 +84,9 @@ export function useUpdateAnyBook() {
       if (!r.ok) throw new Error("Failed to update book");
       return r.json() as Promise<BookDto>;
     },
-    onSuccess: (_, { id }) => {
+    onSuccess: (updatedBook: BookDto, { id }) => {
+      qc.setQueryData(queryKeys.book(id), updatedBook);
       void qc.invalidateQueries({ queryKey: queryKeys.books });
-      void qc.invalidateQueries({ queryKey: queryKeys.book(id) });
     },
   });
 }
