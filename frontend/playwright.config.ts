@@ -8,6 +8,8 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false, // multi-tenancy tests share users; keep serial.
   workers: 1,          // single SQLite DB — concurrent writers cause lock contention.
+  timeout: 60_000,     // CI runners are slow; default 30 s is too tight.
+  expect: { timeout: 15_000 },
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
