@@ -7,6 +7,7 @@ const E2E_JWT_SECRET = "e2e-test-secret-at-least-thirty-two-bytes-ok";
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false, // multi-tenancy tests share users; keep serial.
+  workers: 1,          // single SQLite DB — concurrent writers cause lock contention.
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",

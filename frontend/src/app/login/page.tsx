@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLogin } from "@/lib/api/queries";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
 export default function LoginPage() {
+  const router = useRouter();
   const login = useLogin();
   const {
     register,
@@ -20,7 +22,7 @@ export default function LoginPage() {
   async function onSubmit(data: LoginInput) {
     try {
       await login.mutateAsync(data);
-      window.location.href = "/library";
+      router.push("/library");
     } catch {
       // error displayed via login.error
     }
