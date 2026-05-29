@@ -2,24 +2,47 @@
 import { useState } from "react";
 import Link from "next/link";
 import { m } from "framer-motion";
-import { useBooks, useLogout } from "@/lib/api/queries";
+import { useBooks, useLogout, useUpdateAnyBook } from "@/lib/api/queries";
 import type { components } from "@/lib/api/types";
-
-type BookStatus = components["schemas"]["BookStatus"];
 import { Button } from "@/components/ui/button";
 import { BookList } from "@/components/BookList";
 import { STATUS_LABELS } from "@/components/BookCard";
 import { headerSlideDown, contentFadeUp } from "@/lib/motion/variants";
 
+type BookDto    = components["schemas"]["BookDto"];
+type BookStatus = components["schemas"]["BookStatus"];
+
 export default function LibraryPage() {
   const { data: books, isLoading, error } = useBooks();
   const logout = useLogout();
+  const updateAnyBook = useUpdateAnyBook();
   const [filter, setFilter] = useState<BookStatus | "all">("all");
   const [sort, setSort] = useState<"dateAdded" | "title">("dateAdded");
 
   async function handleLogout() {
     await logout.mutateAsync();
     window.location.href = "/login";
+  }
+
+  async function handleCardStatusChange(book: BookDto, status: BookStatus) {
+    const dateFinished =
+      status === "read"
+        ? (book.dateFinished ?? new Date().toISOString())
+        : null;
+    await updateAnyBook.mutateAsync({
+      id: book.id,
+      data: {
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn ?? null,
+        coverUrl: book.coverUrl ?? null,
+        openLibraryWorkId: book.openLibraryWorkId ?? null,
+        status,
+        rating: book.rating ?? null,
+        notes: book.notes ?? null,
+        dateFinished,
+      },
+    });
   }
 
   const filtered =
@@ -127,7 +150,14 @@ export default function LibraryPage() {
 
         {/* Book grid */}
         <div aria-live="polite" aria-busy={isLoading}>
-          <BookList books={filtered} isLoading={isLoading} error={error ?? null} />
+          <BookList
+            books={filtered}
+            isLoading={isLoading}
+            error={error ?? null}
+            onCardStatusChange={handleCardStatusChange}
+            pendingBookId={updateAnyBook.variables?.id}
+            isCardStatusPending={updateAnyBook.isPending}
+          />
         </div>
       </m.main>
     </div>

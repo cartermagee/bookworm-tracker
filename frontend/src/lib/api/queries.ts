@@ -73,6 +73,24 @@ export function useUpdateBook(id: string) {
   });
 }
 
+/** Single mutation for updating any book by id — use at page/list level
+ *  to avoid one useMutation per card, which causes framer-motion animation
+ *  interruption on mount. */
+export function useUpdateAnyBook() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: CreateBookPayload }) => {
+      const r = await apiUpdateBook(id, data);
+      if (!r.ok) throw new Error("Failed to update book");
+      return r.json() as Promise<BookDto>;
+    },
+    onSuccess: (_, { id }) => {
+      void qc.invalidateQueries({ queryKey: queryKeys.books });
+      void qc.invalidateQueries({ queryKey: queryKeys.book(id) });
+    },
+  });
+}
+
 export function useDeleteBook() {
   const qc = useQueryClient();
   return useMutation({

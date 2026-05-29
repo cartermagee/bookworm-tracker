@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import type { components } from "@/lib/api/types";
-import { useUpdateBook } from "@/lib/api/queries";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_LABELS, STATUS_BADGE_VARIANT } from "@/components/BookCard";
 
@@ -12,22 +11,33 @@ const ALL_STATUSES: BookStatus[] = ["wantToRead", "reading", "read"];
 
 interface StatusPopoverProps {
   book: BookDto;
+  /** Called when the user selects a new status. Mutation is owned by the parent. */
+  onStatusChange: (status: BookStatus) => void;
+  isPending?: boolean;
 }
 
 /**
  * Renders the status badge on library list cards.
  * Clicking it opens a small popover to change status in-place.
  * Stops click propagation so the parent <Link> doesn't navigate.
+ *
+ * Does NOT own the mutation — the parent (library page) owns it so that
+ * having many cards in the list doesn't create N useMutation instances,
+ * which would interrupt framer-motion enter animations on initial load.
  */
-export function StatusPopover({ book }: StatusPopoverProps) {
+export function StatusPopover({ book, onStatusChange, isPending = false }: StatusPopoverProps) {
   const [open, setOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<BookStatus | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const updateBook = useUpdateBook(book.id);
 
   // Show the optimistic status while the mutation is in-flight;
   // fall back to the server-confirmed value once it resolves.
-  const displayStatus = updateBook.isPending && pendingStatus ? pendingStatus : book.status;
+  const displayStatus = isPending && pendingStatus ? pendingStatus : book.status;
+
+  // Clear the optimistic status once the mutation settles.
+  useEffect(() => {
+    if (!isPending) setPendingStatus(null);
+  }, [isPending]);
 
   // Close on outside click
   useEffect(() => {
@@ -54,31 +64,16 @@ export function StatusPopover({ book }: StatusPopoverProps) {
   function handleBadgeClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!updateBook.isPending) setOpen((v) => !v);
+    if (!isPending) setOpen((v) => !v);
   }
 
-  async function handleSelect(e: React.MouseEvent, status: BookStatus) {
+  function handleSelect(e: React.MouseEvent, status: BookStatus) {
     e.preventDefault();
     e.stopPropagation();
     setOpen(false);
     if (status === book.status) return;
     setPendingStatus(status);
-    // Server requires dateFinished when status="read", null otherwise.
-    const dateFinished =
-      status === "read"
-        ? (book.dateFinished ?? new Date().toISOString())
-        : null;
-    await updateBook.mutateAsync({
-      title: book.title,
-      author: book.author,
-      isbn: book.isbn ?? null,
-      coverUrl: book.coverUrl ?? null,
-      openLibraryWorkId: book.openLibraryWorkId ?? null,
-      status,
-      rating: book.rating ?? null,
-      notes: book.notes ?? null,
-      dateFinished,
-    });
+    onStatusChange(status);
   }
 
   return (
@@ -89,13 +84,13 @@ export function StatusPopover({ book }: StatusPopoverProps) {
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-label={`Status: ${STATUS_LABELS[displayStatus]}. Click to change.`}
-        disabled={updateBook.isPending}
+        disabled={isPending}
         className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
       >
         <Badge
           variant={STATUS_BADGE_VARIANT[displayStatus]}
           className={
-            updateBook.isPending
+            isPending
               ? "opacity-50 cursor-wait"
               : "cursor-pointer hover:opacity-80 transition-opacity"
           }
@@ -115,7 +110,7 @@ export function StatusPopover({ book }: StatusPopoverProps) {
             <button
               key={s}
               role="option"
-              aria-selected={s === book.status}
+              aria-selected={s === displayStatus}
               type="button"
               onClick={(e) => handleSelect(e, s)}
               className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-alt focus-visible:outline-none focus-visible:bg-surface-alt

@@ -3,17 +3,27 @@ import Link from "next/link";
 import type { components } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { BookCard } from "@/components/BookCard";
-import { staggerContainer, bookCard } from "@/lib/motion/variants";
 
-type BookDto = components["schemas"]["BookDto"];
+type BookDto    = components["schemas"]["BookDto"];
+type BookStatus = components["schemas"]["BookStatus"];
 
 interface BookListProps {
   books: BookDto[];
   isLoading: boolean;
   error: Error | null;
+  onCardStatusChange: (book: BookDto, status: BookStatus) => void;
+  pendingBookId?: string;
+  isCardStatusPending?: boolean;
 }
 
-export function BookList({ books, isLoading, error }: BookListProps) {
+export function BookList({
+  books,
+  isLoading,
+  error,
+  onCardStatusChange,
+  pendingBookId,
+  isCardStatusPending = false,
+}: BookListProps) {
   /* ── Loading: pulsing skeletons ─────────────────────────────── */
   if (isLoading) {
     return (
@@ -80,31 +90,38 @@ export function BookList({ books, isLoading, error }: BookListProps) {
   /* ── Book grid ──────────────────────────────────────────────── */
   return (
     /*
-     * staggerContainer: on initial mount, children cascade in 50 ms apart.
-     * AnimatePresence mode="popLayout": when the filter changes, exiting
-     * cards shrink-fade out and the grid reflows while entering cards rise in.
+     * Each card has explicit initial/animate values (not variant propagation)
+     * so re-renders from query/mutation state changes can't interrupt the
+     * enter animation. Stagger is implemented via per-card delay.
+     * AnimatePresence mode="popLayout": exiting cards shrink-fade out and
+     * the grid reflows while entering cards rise in on filter changes.
      * layout on each item: cards that stay in place glide to new positions.
      */
-    <m.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
-      className="grid gap-3 sm:grid-cols-2"
-    >
+    <div className="grid gap-3 sm:grid-cols-2">
       <AnimatePresence mode="popLayout">
-        {books.map((book) => (
+        {books.map((book, index) => (
           <m.div
             key={book.id}
-            variants={bookCard}
-            exit={bookCard.exit}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94 }}
             layout
             whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 28,
+              delay: index * 0.05,
+            }}
           >
-            <BookCard book={book} />
+            <BookCard
+              book={book}
+              onStatusChange={(status) => onCardStatusChange(book, status)}
+              isStatusPending={isCardStatusPending && pendingBookId === book.id}
+            />
           </m.div>
         ))}
       </AnimatePresence>
-    </m.div>
+    </div>
   );
 }

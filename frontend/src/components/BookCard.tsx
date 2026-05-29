@@ -24,9 +24,11 @@ export const STATUS_BADGE_VARIANT: Record<
 
 interface BookCardProps {
   book: BookDto;
+  onStatusChange: (status: BookStatus) => void;
+  isStatusPending?: boolean;
 }
 
-export function BookCard({ book }: BookCardProps) {
+export function BookCard({ book, onStatusChange, isStatusPending = false }: BookCardProps) {
   const stars = book.rating ?? 0;
 
   return (
@@ -63,7 +65,11 @@ export function BookCard({ book }: BookCardProps) {
             <p className="mt-0.5 text-sm text-secondary truncate">{book.author}</p>
 
             <div className="mt-auto flex items-center gap-2 pt-2">
-              <StatusPopover book={book} />
+              <StatusPopover
+                book={book}
+                onStatusChange={onStatusChange}
+                isPending={isStatusPending}
+              />
               {stars > 0 && (
                 <span
                   className="text-xs text-star"
