@@ -170,13 +170,13 @@ export default function BookDetailPage({ params }: PageProps) {
                 defaultValues={{
                   title: book.title,
                   author: book.author,
-                  isbn: book.isbn ?? undefined,
-                  coverUrl: book.coverUrl ?? undefined,
-                  openLibraryWorkId: book.openLibraryWorkId ?? undefined,
+                  isbn: book.isbn ?? null,
+                  coverUrl: book.coverUrl ?? null,
+                  openLibraryWorkId: book.openLibraryWorkId ?? null,
                   status: book.status as BookStatus,
-                  rating: book.rating ?? undefined,
-                  notes: book.notes ?? undefined,
-                  dateFinished: book.dateFinished ?? undefined,
+                  rating: book.rating ?? null,
+                  notes: book.notes ?? null,
+                  dateFinished: book.dateFinished ?? null,
                 }}
                 onSubmit={onSubmit}
                 isPending={updateBook.isPending}

@@ -57,18 +57,6 @@ test("edit a book title", async ({ page }) => {
   await titleInput.clear();
   await titleInput.fill("The Great Gatsby (Edited)");
   await page.getByRole("button", { name: "Save Changes" }).click();
-
-  // Debug: capture page state 5 s after clicking Save to diagnose CI failure.
-  await page.waitForTimeout(5_000);
-  const url = page.url();
-  const buttons = await page.getByRole("button").allInnerTexts();
-  const headings = await page.getByRole("heading").allInnerTexts();
-  const alerts = await page.getByRole("alert").allInnerTexts();
-  console.log(`[edit-debug] url=${url}`);
-  console.log(`[edit-debug] buttons=${JSON.stringify(buttons)}`);
-  console.log(`[edit-debug] headings=${JSON.stringify(headings)}`);
-  console.log(`[edit-debug] alerts=${JSON.stringify(alerts)}`);
-
   await expect(
     page.getByRole("heading", { name: "The Great Gatsby (Edited)" })
   ).toBeVisible();
