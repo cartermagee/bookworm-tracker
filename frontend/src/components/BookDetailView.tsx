@@ -1,23 +1,30 @@
 import { m } from "framer-motion";
 import type { components } from "@/lib/api/types";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { STATUS_LABELS, STATUS_BADGE_VARIANT } from "@/components/BookCard";
+import { StatusPillRow } from "@/components/StatusPillRow";
 import { heroScale, detailText, contentFadeUp } from "@/lib/motion/variants";
 
-type BookDto = components["schemas"]["BookDto"];
+type BookDto    = components["schemas"]["BookDto"];
+type BookStatus = components["schemas"]["BookStatus"];
 
 interface BookDetailViewProps {
   book: BookDto;
   /** When > 0 the view-mode panels skip their entrance animation (post-save). */
   saveCount: number;
+  onStatusChange: (status: BookStatus) => void;
+  isStatusPending?: boolean;
 }
 
 /**
  * Read-only view of a single book — cover hero, metadata, notes.
  * Separated from BookDetailPage to reduce its cyclomatic complexity.
  */
-export function BookDetailView({ book, saveCount }: BookDetailViewProps) {
+export function BookDetailView({
+  book,
+  saveCount,
+  onStatusChange,
+  isStatusPending = false,
+}: BookDetailViewProps) {
   const stars = book.rating ?? 0;
   const animated = saveCount === 0;
 
@@ -64,12 +71,11 @@ export function BookDetailView({ book, saveCount }: BookDetailViewProps) {
             </h1>
             <p className="text-secondary">{book.author}</p>
 
-            <Badge
-              variant={STATUS_BADGE_VARIANT[book.status]}
-              className="self-start"
-            >
-              {STATUS_LABELS[book.status]}
-            </Badge>
+            <StatusPillRow
+              currentStatus={book.status}
+              onStatusChange={onStatusChange}
+              isPending={isStatusPending}
+            />
 
             {stars > 0 && (
               <p

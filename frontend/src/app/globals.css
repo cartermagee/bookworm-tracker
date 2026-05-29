@@ -43,8 +43,8 @@
   --badge-reading-fg:  #3730a3;   /* indigo-800  — 10.4:1 */
   --badge-done-bg:     #f0fdf4;   /* green-50 */
   --badge-done-fg:     #166534;   /* green-800  — 6.95:1 */
-  --badge-want-border: #e2ddd7;
-  --badge-want-fg:     #6b6560;   /* 4.86:1 on --background */
+  --badge-want-bg:     #eff6ff;   /* blue-50 */
+  --badge-want-fg:     #1d4ed8;   /* blue-700 — 7.2:1 on blue-50 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -73,8 +73,8 @@
     --badge-reading-fg:  #c7d2fe;   /* indigo-200 — 7.86:1 */
     --badge-done-bg:     #14532d;   /* green-900 */
     --badge-done-fg:     #86efac;   /* green-300 — 6.50:1 */
-    --badge-want-border: #3b3547;
-    --badge-want-fg:     #b3acc0;
+    --badge-want-bg:     #1e3a5f;   /* dark blue */
+    --badge-want-fg:     #93c5fd;   /* blue-300 — 7.1:1 on --badge-want-bg */
   }
 }
 
@@ -117,7 +117,7 @@
   --color-badge-reading-fg:    var(--badge-reading-fg);
   --color-badge-done-bg:       var(--badge-done-bg);
   --color-badge-done-fg:       var(--badge-done-fg);
-  --color-badge-want-border:   var(--badge-want-border);
+  --color-badge-want-bg:       var(--badge-want-bg);
   --color-badge-want-fg:       var(--badge-want-fg);
 
   /* Typography */

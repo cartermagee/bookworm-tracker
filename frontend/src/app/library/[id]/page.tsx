@@ -27,6 +27,31 @@ export default function BookDetailPage({ params }: PageProps) {
   // from opacity:0 — which would stall in headless Chromium (RAF throttled).
   const [saveCount, setSaveCount] = useState(0);
 
+  async function handleStatusChange(status: BookStatus) {
+    if (!book) return;
+    // Server requires dateFinished when status="read", null otherwise.
+    const dateFinished =
+      status === "read"
+        ? (book.dateFinished ?? new Date().toISOString())
+        : null;
+    try {
+      await updateBook.mutateAsync({
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn ?? null,
+        coverUrl: book.coverUrl ?? null,
+        openLibraryWorkId: book.openLibraryWorkId ?? null,
+        status,
+        rating: book.rating ?? null,
+        notes: book.notes ?? null,
+        dateFinished,
+      });
+      setSaveCount((n) => n + 1);
+    } catch {
+      // error displayed via updateBook.error
+    }
+  }
+
   async function onSubmit(data: BookFormValues) {
     try {
       await updateBook.mutateAsync({
@@ -128,7 +153,12 @@ export default function BookDetailPage({ params }: PageProps) {
       <main id="main-content" className="mx-auto max-w-2xl p-6">
         {!isEditing ? (
           /* ── View mode — delegated to BookDetailView ──────────── */
-          <BookDetailView book={book} saveCount={saveCount} />
+          <BookDetailView
+            book={book}
+            saveCount={saveCount}
+            onStatusChange={handleStatusChange}
+            isStatusPending={updateBook.isPending}
+          />
         ) : (
           /* ── Edit mode ─────────────────────────────────────────── */
           <Card>

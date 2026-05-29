@@ -14,9 +14,12 @@ const badgeVariants = cva(
         /** Read — green palette, verified WCAG AA in light + dark */
         secondary:
           "bg-badge-done-bg text-badge-done-fg",
-        /** Want to Read — bordered, neutral */
+        /** Want to Read — blue palette, verified WCAG AA in light + dark */
+        want:
+          "bg-badge-want-bg text-badge-want-fg",
+        /** Unselected pill option in StatusPillRow */
         outline:
-          "border border-badge-want-border text-badge-want-fg",
+          "border border-border text-secondary",
         /** Error / destructive usage */
         destructive:
           "bg-error-surface text-error-text",

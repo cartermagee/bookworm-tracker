@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { components } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatusPopover } from "@/components/StatusPopover";
 
 type BookDto    = components["schemas"]["BookDto"];
 type BookStatus = components["schemas"]["BookStatus"];
@@ -14,9 +15,9 @@ export const STATUS_LABELS: Record<BookStatus, string> = {
 
 export const STATUS_BADGE_VARIANT: Record<
   BookStatus,
-  "default" | "secondary" | "outline"
+  "want" | "default" | "secondary"
 > = {
-  wantToRead: "outline",
+  wantToRead: "want",
   reading:    "default",
   read:       "secondary",
 };
@@ -62,9 +63,7 @@ export function BookCard({ book }: BookCardProps) {
             <p className="mt-0.5 text-sm text-secondary truncate">{book.author}</p>
 
             <div className="mt-auto flex items-center gap-2 pt-2">
-              <Badge variant={STATUS_BADGE_VARIANT[book.status]}>
-                {STATUS_LABELS[book.status]}
-              </Badge>
+              <StatusPopover book={book} />
               {stars > 0 && (
                 <span
                   className="text-xs text-star"
