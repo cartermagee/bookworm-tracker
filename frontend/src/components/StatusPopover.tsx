@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { components } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_LABELS, STATUS_BADGE_VARIANT } from "@/components/BookCard";
+import { STATUS_LABELS, STATUS_BADGE_VARIANT } from "@/lib/bookStatus";
 
 type BookDto    = components["schemas"]["BookDto"];
 type BookStatus = components["schemas"]["BookStatus"];

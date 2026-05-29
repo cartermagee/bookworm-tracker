@@ -3,24 +3,13 @@ import type { components } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusPopover } from "@/components/StatusPopover";
+import { STATUS_LABELS, STATUS_BADGE_VARIANT } from "@/lib/bookStatus";
+
+// Re-export so existing imports from BookCard continue to work.
+export { STATUS_LABELS, STATUS_BADGE_VARIANT };
 
 type BookDto    = components["schemas"]["BookDto"];
 type BookStatus = components["schemas"]["BookStatus"];
-
-export const STATUS_LABELS: Record<BookStatus, string> = {
-  wantToRead: "Want to Read",
-  reading:    "Reading",
-  read:       "Read",
-};
-
-export const STATUS_BADGE_VARIANT: Record<
-  BookStatus,
-  "want" | "default" | "secondary"
-> = {
-  wantToRead: "want",
-  reading:    "default",
-  read:       "secondary",
-};
 
 interface BookCardProps {
   book: BookDto;
